@@ -39,7 +39,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         intertrial_interval + iti_range,
         number_of_trial,
     )
-    flick_each_trial = blockwise_shuffle2(
+    flick_each_trial, av_each_trial = blockwise_shuffle2(
         repeat(
             go_nogo_signals_with_sound,
             number_of_trial // len(go_nogo_signals_with_sound) + 1,
@@ -51,7 +51,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         len(go_nogo_signals_with_sound),
     )
     trials = TrialIterator(
-        av_trials[:number_of_trial], flick_each_trial[:number_of_trial], itis
+        av_each_trial[:number_of_trial], flick_each_trial[:number_of_trial], itis
     )
 
     try:
