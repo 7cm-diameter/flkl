@@ -1,0 +1,26 @@
+Comport:
+  input:
+    serial-number: "24230303737351707072"
+    baudrate: 1000000
+    timeout: 1.0
+
+  output:
+    serial-number: "1423530383535140E1A0"
+    baudrate: 115200
+    sketch: "./ino"
+
+Experimental:
+  sound-pin: 2
+  led-pin: 3
+  reward-pin: 4
+
+  reward-duration: 20
+  flick-duration: 1000
+  led-flick-hz:   [4, 9]
+  go-nogo-boundary: 6.5
+  go-ratio: 1
+  nogo-ratio: 0
+
+  ITI: 14.0
+  ITI-range: 5.
+  number-of-trial: 200

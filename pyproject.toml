@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "flkl"
+version = "0.1.0"
+description = ""
+authors = ["7cm-diameter <from.this.ridiculous.loop@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pyno = {git = "https://github.com/7cm-diameter/pyno.git"}
+amas = {git = "https://github.com/7cm-diameter/amas.git"}
+utex = {git = "https://github.com/7cm-diameter/utex.git"}
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+isort = "^5.13.2"
+python-language-server = {extras = ["all"], version = "^0.36.2"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
