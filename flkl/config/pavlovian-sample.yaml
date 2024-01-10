@@ -13,6 +13,7 @@ Experimental:
   sound-pin: 2
   led-pin: 3
   reward-pin: 4
+  speaker-id: 2
 
   reward-duration: 20
   flick-duration: 1000
