@@ -27,3 +27,7 @@ Experimental:
   ITI: 14.0
   ITI-range: 5.
   number-of-trial: 200
+
+Metadata:
+  subject: "name-of-subject"
+  condition: "name-of-condition"
