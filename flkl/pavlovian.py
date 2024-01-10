@@ -1,3 +1,5 @@
+from typing import Optional
+
 from amas.agent import Agent, NotWorkingError
 import numpy as np
 from numpy.random import uniform
@@ -92,9 +94,11 @@ if __name__ == "__main__":
     from amas.env import Environment
 
     config = PinoClap().config()
-    com_input_config = config.comport.get("input")
+    com_input_config: Optional[dict] = config.comport.get("input")
+    com_output_config: Optional[dict] = config.comport.get("output")
+    if com_input_config is None or com_output_config is None:
+        raise ValueError("`com_input_config` and `com_output_config` are not defined.")
     com_input_config.update({"mode": Mode.readeruno})
-    com_output_config = config.comport.get("output")
     com_output_config.update({"mode": Mode.user})
 
     if com_input_config is None and com_output_config is None:
@@ -114,6 +118,7 @@ if __name__ == "__main__":
         ArduinoConnecter(setting).write_sketch()
 
     available_boards = check_connected_board_info()
+    reader_ino, flkl = None, None
     for board in available_boards:
         setting = ArduinoSetting.derive_from_portinfo(board)
         if board.serial_number == com_input_config.get("serial-number"):
@@ -124,6 +129,16 @@ if __name__ == "__main__":
             flkl = Flkl(ArduinoConnecter(setting).connect())
             [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 5)]
             [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 7)]
+
+    if reader_ino is None:
+        raise ValueError(
+            f"Input arduino (serial number: {com_input_config.get('serial-number')}) is not found."
+        )
+
+    if flkl is None:
+        raise ValueError(
+            f"Output arduino (serial number: {com_output_config.get('serial-number')}) is not found."
+        )
 
     controller = (
         Agent("CONTROLLER")
