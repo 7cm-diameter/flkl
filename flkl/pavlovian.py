@@ -4,6 +4,7 @@ from amas.agent import Agent, NotWorkingError
 import numpy as np
 from numpy.random import uniform
 from utex.agent import AgentAddress
+from utex.audio import Speaker, WhiteNoise
 from utex.scheduler import SessionMarker, TrialIterator, blockwise_shuffle2, mix, repeat
 
 from flkl.share import Flkl
@@ -12,7 +13,11 @@ from flkl.share import Flkl
 async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     led_pin = expvars.get("led-pin", 5)
     sound_pin = expvars.get("sound-pin", 2)
+    speaker_id = expvars.get("speaker-id", 1)
     reward_pin = expvars.get("reward-pin", 8)
+
+    noise = WhiteNoise()
+    speaker = Speaker(speaker_id)
 
     reward_duration = expvars.get("reward-duration", 20)
     flick_duration = expvars.get("flick-duration", 1000)
@@ -58,6 +63,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     try:
         while agent.working():
+            speaker.play(noise, blocking=False, loop=True)
             for i, is_visual, flick, iti in trials:
                 print(f"{i} trial: flick with {flick} hz after {iti} sec")
                 await agent.sleep(iti)
@@ -73,8 +79,10 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     if uniform() <= 0.5:
                         ino.high_for(reward_pin, reward_duration)
                         await agent.sleep(reward_duration / 1000)
+            speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
     except NotWorkingError:
+        speaker.stop()
         pass
 
 
