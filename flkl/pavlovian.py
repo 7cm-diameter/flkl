@@ -92,6 +92,10 @@ if __name__ == "__main__":
     from utex.scheduler import SessionMarker
     from amas.connection import Register
     from amas.env import Environment
+    from utex.fs import namefile, get_current_file_abspath
+
+    from os import mkdir
+    from os.path import exists, join
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")
@@ -140,6 +144,11 @@ if __name__ == "__main__":
             f"Output arduino (serial number: {com_output_config.get('serial-number')}) is not found."
         )
 
+    data_dir = join(get_current_file_abspath(__file__), "data")
+    if not exists(data_dir):
+        mkdir(data_dir)
+    filename = join(data_dir, namefile(config.metadata))
+
     controller = (
         Agent("CONTROLLER")
         .assign_task(conditional_discrimination, ino=flkl, expvars=config.experimental)
@@ -148,7 +157,7 @@ if __name__ == "__main__":
 
     reader = Reader(reader_ino)
     observer = Observer()
-    recorder = Recorder(filename="./hoge.csv")
+    recorder = Recorder(filename=filename)
 
     agents = [controller, recorder, reader, observer]
     register = Register(agents)
