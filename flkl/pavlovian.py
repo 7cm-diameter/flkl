@@ -33,10 +33,10 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     sound_trial = repeat(0, len(sound_flick_hz))
     visual_ratio = expvars.get("visual-ratio", 1)
     sound_ratio = expvars.get("sound-ratio", 1)
-    go_nogo_signals_with_sound = mix(
+    flicker_hz_combination = mix(
         go_nogo_signals, sound_flick_hz, visual_ratio, sound_ratio
     )
-    av_trials = mix(visual_trial, sound_trial, visual_ratio, sound_ratio)
+    modality_combination = mix(visual_trial, sound_trial, visual_ratio, sound_ratio)
 
     intertrial_interval = expvars.get("ITI", 3.0)
     iti_range = expvars.get("ITI-range", 1.0)
@@ -46,19 +46,21 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         intertrial_interval + iti_range,
         number_of_trial,
     )
-    flick_each_trial, av_each_trial = blockwise_shuffle2(
+    flicker_hz_per_trial, modality_per_trial = blockwise_shuffle2(
         repeat(
-            go_nogo_signals_with_sound,
-            number_of_trial // len(go_nogo_signals_with_sound) + 1,
+            flicker_hz_combination,
+            number_of_trial // len(flicker_hz_combination) + 1,
         ),
         repeat(
-            av_trials,
-            number_of_trial // len(av_trials) + 1,
+            modality_combination,
+            number_of_trial // len(modality_combination) + 1,
         ),
-        len(go_nogo_signals_with_sound),
+        len(flicker_hz_combination),
     )
     trials = TrialIterator(
-        av_each_trial[:number_of_trial], flick_each_trial[:number_of_trial], itis
+        modality_per_trial[:number_of_trial],
+        flicker_hz_per_trial[:number_of_trial],
+        itis,
     )
 
     try:
