@@ -66,7 +66,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         ino.high_for(reward_pin, reward_duration)
                         await agent.sleep(reward_duration / 1000)
                 else:
-                    ino.flick_for(led_pin, flick, flick_duration)
+                    ino.flick_for(sound_pin, flick, flick_duration)
                     await agent.sleep(flick_duration / 1000)
                     if uniform() <= 0.5:
                         ino.high_for(reward_pin, reward_duration)
