@@ -32,7 +32,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     visual_trial = repeat(1, len(go_nogo_signals))
     sound_trial = repeat(0, len(sound_flick_hz))
     visual_ratio = expvars.get("visual-ratio", 1)
-    sound_ratio = expvars.get("audio-ratio", 1)
+    sound_ratio = expvars.get("sound-ratio", 1)
     go_nogo_signals_with_sound = mix(
         go_nogo_signals, sound_flick_hz, visual_ratio, sound_ratio
     )
