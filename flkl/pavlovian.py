@@ -83,6 +83,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         await agent.sleep(reward_duration / 1000)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
+            agent.finish()
     except NotWorkingError:
         speaker.stop()
         pass
