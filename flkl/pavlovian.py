@@ -11,10 +11,10 @@ from flkl.share import Flkl
 
 
 async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
-    led_pin = expvars.get("led-pin", 5)
+    led_pin = expvars.get("led-pin", 3)
     sound_pin = expvars.get("sound-pin", 2)
     speaker_id = expvars.get("speaker-id", 1)
-    reward_pin = expvars.get("reward-pin", 8)
+    reward_pin = expvars.get("reward-pin", 4)
 
     noise = WhiteNoise()
     speaker = Speaker(speaker_id)
