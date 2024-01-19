@@ -7,7 +7,7 @@ from utex.agent import AgentAddress
 from utex.audio import Speaker, WhiteNoise
 from utex.scheduler import SessionMarker, TrialIterator, blockwise_shuffle2, mix, repeat
 
-from flkl.share import Flkl
+from flkl.share import Flkl, as_millis
 
 
 async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
@@ -19,8 +19,10 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     noise = WhiteNoise()
     speaker = Speaker(speaker_id)
 
-    reward_duration = expvars.get("reward-duration", 20)
-    flick_duration = expvars.get("flick-duration", 1000)
+    reward_duration = expvars.get("reward-duration", 0.02)
+    reward_duration_millis = as_millis(reward_duration)
+    flick_duration = expvars.get("flick-duration", 1.0)
+    flick_duration_millis = as_millis(flick_duration)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("boundary", 6.5)
@@ -70,17 +72,17 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 print(f"{i} trial: flick with {flick} hz after {iti} sec")
                 await agent.sleep(iti)
                 if is_visual:
-                    ino.flick_for(led_pin, flick, flick_duration)
-                    await agent.sleep(flick_duration / 1000)
+                    ino.flick_for(led_pin, flick, flick_duration_millis)
+                    await agent.sleep(flick_duration)
                     if flick > boundary:
-                        ino.high_for(reward_pin, reward_duration)
-                        await agent.sleep(reward_duration / 1000)
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await agent.sleep(reward_duration)
                 else:
-                    ino.flick_for(sound_pin, flick, flick_duration)
-                    await agent.sleep(flick_duration / 1000)
+                    ino.flick_for(sound_pin, flick, flick_duration_millis)
+                    await agent.sleep(flick_duration)
                     if uniform() <= 0.5:
-                        ino.high_for(reward_pin, reward_duration)
-                        await agent.sleep(reward_duration / 1000)
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await agent.sleep(reward_duration)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()

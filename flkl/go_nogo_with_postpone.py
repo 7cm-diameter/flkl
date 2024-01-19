@@ -9,6 +9,7 @@ from utex.scheduler import SessionMarker, TrialIterator, blockwise_shuffle2, mix
 
 from flkl.share import (
     Flkl,
+    as_millis,
     flush_message_for,
     go_with_limit,
     nogo_with_postpone,
@@ -26,11 +27,11 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     noise = WhiteNoise()
     speaker = Speaker(speaker_id)
 
-    reward_duration = expvars.get("reward-duration", 20)
-    timeout_duration = expvars.get("timeout-duration", 5.0)
-    FLICK_DURATION = 60000
-    FLUSH_DURATION = 1000
+    reward_duration = expvars.get("reward-duration", 0.02)
+    reward_duration_millis = as_millis(reward_duration)
+    FLICK_DURATION_MILLIS = 60000
     decision_duration = expvars.get("decision-duration", 2.0)
+    decision_duration_millis = as_millis(decision_duration)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("boundary", 6.5)
@@ -81,28 +82,29 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, flick, led_pin)
                 await flush_message_for(agent, iti)
                 if is_visual:
-                    ino.flick_on(led_pin, flick, FLICK_DURATION)
+                    ino.flick_on(led_pin, flick, FLICK_DURATION_MILLIS)
                     if flick > boundary:
                         await go_with_limit(
                             agent, response_pin, decision_duration, postpone
                         )
-                        ino.high_for(reward_pin, reward_duration)
-                        await flush_message_for(agent, reward_duration / 1000)
+                        ino.flick_off()
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await flush_message_for(agent, reward_duration)
                     else:
                         await nogo_with_postpone(
                             agent, response_pin, decision_duration, postpone
                         )
-                        await flush_message_for(agent, reward_duration / 1000)
-                    ino.flick_off()
+                        ino.flick_off()
+                        await flush_message_for(agent, reward_duration)
                 else:
-                    ino.flick_for(sound_pin, flick, decision_duration)
+                    ino.flick_for(sound_pin, flick, decision_duration_millis)
                     if uniform() <= 0.5:
                         await flush_message_for(agent, decision_duration)
-                        ino.high_for(reward_pin, reward_duration)
-                        await flush_message_for(agent, reward_duration / 1000)
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await flush_message_for(agent, reward_duration)
                     else:
                         await flush_message_for(agent, decision_duration)
-                        await flush_message_for(agent, reward_duration / 1000)
+                        await flush_message_for(agent, reward_duration)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()

@@ -7,7 +7,7 @@ from utex.agent import AgentAddress
 from utex.audio import Speaker, WhiteNoise
 from utex.scheduler import SessionMarker, TrialIterator, blockwise_shuffle2, mix, repeat
 
-from flkl.share import Flkl, detect_lick, flush_message_for, show_progress
+from flkl.share import Flkl, as_millis, detect_lick, flush_message_for, show_progress
 
 
 async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
@@ -21,10 +21,12 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     speaker = Speaker(speaker_id)
 
     reward_duration = expvars.get("reward-duration", 20)
+    reward_duration_millis = as_millis(reward_duration)
     timeout_duration = expvars.get("timeout-duration", 5.0)
     flick_duration = expvars.get("flick-duration", 2000)
+    flick_duration_millis = as_millis(flick_duration)
     decision_duration = expvars.get("decision-duration", 1.0)
-    flush_duration = flick_duration / 1000 - decision_duration
+    flush_duration = flick_duration - decision_duration
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("boundary", 6.5)
@@ -74,22 +76,22 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, flick, 5)
                 await flush_message_for(agent, iti)
                 if is_visual:
-                    ino.flick_for(led_pin, flick, flick_duration)
+                    ino.flick_for(led_pin, flick, flick_duration_millis)
                     await flush_message_for(agent, flush_duration)
                     is_licked = await detect_lick(agent, decision_duration, 6)
                     if flick > boundary and is_licked:
-                        ino.high_for(reward_pin, reward_duration)
-                        await flush_message_for(agent, reward_duration / 1000)
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await flush_message_for(agent, reward_duration)
                     elif flick < boundary and not is_licked:
-                        await flush_message_for(agent, reward_duration / 1000)
+                        await flush_message_for(agent, reward_duration)
                     else:
                         await flush_message_for(agent, timeout_duration)
                 else:
-                    ino.flick_for(sound_pin, flick, flick_duration)
-                    await flush_message_for(agent, flick_duration / 1000)
+                    ino.flick_for(sound_pin, flick, flick_duration_millis)
+                    await flush_message_for(agent, flick_duration)
                     if uniform() <= 0.5:
-                        ino.high_for(reward_pin, reward_duration)
-                        await flush_message_for(agent, reward_duration / 1000)
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        await flush_message_for(agent, reward_duration_millis)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()

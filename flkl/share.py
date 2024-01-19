@@ -26,6 +26,10 @@ class Flkl(ArduinoFlicker):
         self.connection.write(message)
 
 
+def as_millis(s: float) -> int:
+    return int(s * 1000)
+
+
 def show_progress(trial: int, iti: float, hz: float, pin: int):
     print(f"Trial {trial}: flickr ({hz}) follows after {iti} sec on {pin} pin")
 
