@@ -41,18 +41,31 @@ def as_eventtime(readline: str) -> tuple[int, int]:
     return event_id, micros
 
 
-async def detect_lick(agent: Agent, duration: float, target):
+async def flush_message_for(agent: Agent, duration: float):
     from time import perf_counter
 
     while duration >= 0.0 and agent.working():
         s = perf_counter()
+        await agent.try_recv(duration)
+        e = perf_counter()
+        duration -= e - s
+
+
+async def detect_lick(agent: Agent, duration: float, target):
+    from time import perf_counter
+
+    licked = False
+
+    while duration >= 0.0 and agent.working():
+        s = perf_counter()
         mail = await agent.try_recv(duration)
+        duration -= perf_counter() - s
         if mail is None:
             continue
         _, mess = mail
         if mess == target:
-            return True
-    return False
+            licked = True
+    return licked
 
 
 async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
