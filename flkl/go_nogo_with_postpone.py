@@ -28,9 +28,9 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     reward_duration = expvars.get("reward-duration", 20)
     timeout_duration = expvars.get("timeout-duration", 5.0)
-    flick_duration = expvars.get("flick-duration", 2000)
-    decision_duration = expvars.get("decision-duration", 1.0)
-    flush_duration = flick_duration / 1000 - decision_duration
+    FLICK_DURATION = 60000
+    FLUSH_DURATION = 1000
+    decision_duration = expvars.get("decision-duration", 2.0)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("boundary", 6.5)
@@ -81,8 +81,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, flick, led_pin)
                 await flush_message_for(agent, iti)
                 if is_visual:
-                    ino.flick_on(led_pin, flick, 60000)
-                    await flush_message_for(agent, flush_duration)
+                    ino.flick_on(led_pin, flick, FLICK_DURATION)
                     if flick > boundary:
                         await go_with_limit(
                             agent, response_pin, decision_duration, postpone
@@ -96,10 +95,13 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         await flush_message_for(agent, reward_duration / 1000)
                     ino.flick_off()
                 else:
-                    ino.flick_for(sound_pin, flick, flick_duration)
-                    await flush_message_for(agent, flick_duration / 1000)
+                    ino.flick_for(sound_pin, flick, decision_duration)
                     if uniform() <= 0.5:
+                        await flush_message_for(agent, decision_duration)
                         ino.high_for(reward_pin, reward_duration)
+                        await flush_message_for(agent, reward_duration / 1000)
+                    else:
+                        await flush_message_for(agent, decision_duration)
                         await flush_message_for(agent, reward_duration / 1000)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
