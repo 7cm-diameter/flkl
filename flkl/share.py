@@ -68,6 +68,50 @@ async def detect_lick(agent: Agent, duration: float, target):
     return licked
 
 
+async def go_with_limit(
+    agent: Agent,
+    correct: int,
+    decision_duration: float,
+    max_duration: float,
+):
+    from time import perf_counter
+
+    while max_duration >= 0.0 and agent.working():
+        s = perf_counter()
+        mail = await agent.try_recv(max_duration)
+        ellapsed_time = perf_counter() - s
+        decision_duration -= ellapsed_time
+        max_duration -= ellapsed_time
+
+        if mail is None:
+            break
+
+        _, mess = mail
+        if mess == correct and decision_duration <= 0.0:
+            break
+        else:
+            continue
+
+
+async def nogo_with_postpone(
+    agent: Agent, incorrect: int, decision_duration: float, max_duration: float
+):
+    from time import perf_counter
+
+    _decission_duration = decision_duration
+
+    while max_duration >= 0.0 and agent.working():
+        s = perf_counter()
+        mail = await agent.try_recv(decision_duration)
+        ellapsed_time = perf_counter() - s
+        max_duration -= ellapsed_time
+        if mail is None:
+            break
+        _, mess = mail
+        if mess == incorrect:
+            continue
+
+
 async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
     from utex.agent import AgentAddress
 
