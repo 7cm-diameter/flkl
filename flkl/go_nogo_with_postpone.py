@@ -36,8 +36,9 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("boundary", 6.5)
     go_ratio = expvars.get("go-ratio", 1)
+    go_max_duration = expvars.get("go-maximum-duration", 4.0)
+    nogo_max_duration = expvars.get("nogo-maximum-duration", 20.0)
     nogo_ratio = expvars.get("nogo-ratio", 1)
-    postpone = expvars.get("postpone", 10.0)
     go_signals = list(filter(lambda hz: hz > boundary, led_flick_hz))
     nogo_signals = list(filter(lambda hz: hz < boundary, led_flick_hz))
     go_nogo_signals = mix(go_signals, nogo_signals, go_ratio, nogo_ratio)
@@ -85,14 +86,14 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     ino.flick_on(led_pin, flick, FLICK_DURATION_MILLIS)
                     if flick > boundary:
                         await go_with_limit(
-                            agent, response_pin, decision_duration, postpone
+                            agent, response_pin, decision_duration, go_max_duration
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin, reward_duration_millis)
                         await flush_message_for(agent, reward_duration)
                     else:
                         await nogo_with_postpone(
-                            agent, response_pin, decision_duration, postpone
+                            agent, response_pin, decision_duration, nogo_max_duration
                         )
                         ino.flick_off()
                         await flush_message_for(agent, reward_duration)
