@@ -127,10 +127,10 @@ async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
             if readline is None:
                 continue
             decoded_readline = readline.rstrip().decode("utf-8")
-            event, _ = as_eventtime(decoded_readline)
+            event, time = as_eventtime(decoded_readline)
             if event == response_pin:
                 agent.send_to(AgentAddress.CONTROLLER.value, event)
-            agent.send_to(AgentAddress.RECORDER.value, decoded_readline)
+            agent.send_to(AgentAddress.RECORDER.value, (time, event))
 
     except NotWorkingError:
         pass
