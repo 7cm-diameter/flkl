@@ -101,25 +101,26 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
 
 if __name__ == "__main__":
-    from flkl.share import read
-    from pyno.com import check_connected_board_info
-    from pyno.ino import (
-        ArduinoSetting,
-        Mode,
-        ArduinoConnecter,
-        PinMode,
-        ArduinoLineReader,
-    )
-    from utex.clap import PinoClap
-    from utex.agent import self_terminate, Observer, Recorder
-    from utex.scheduler import SessionMarker
-    from amas.connection import Register
-    from amas.env import Environment
-    from amas.agent import Agent
-    from utex.fs import namefile, get_current_file_abspath
-
     from os import mkdir
     from os.path import exists, join
+
+    from amas.agent import Agent
+    from amas.connection import Register
+    from amas.env import Environment
+    from pyno.com import check_connected_board_info
+    from pyno.ino import (
+        ArduinoConnecter,
+        ArduinoLineReader,
+        ArduinoSetting,
+        Mode,
+        PinMode,
+    )
+    from utex.agent import Observer, Recorder, self_terminate
+    from utex.clap import PinoClap
+    from utex.fs import get_current_file_abspath, namefile
+    from utex.scheduler import SessionMarker
+
+    from flkl.share import read
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")

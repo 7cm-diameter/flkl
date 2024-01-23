@@ -1,11 +1,12 @@
 from typing import Optional
 
-from amas.agent import Agent, NotWorkingError
 import numpy as np
+from amas.agent import Agent, NotWorkingError
 from numpy.random import uniform
 from utex.agent import AgentAddress
 from utex.audio import Speaker, WhiteNoise
-from utex.scheduler import SessionMarker, TrialIterator, blockwise_shuffle2, mix, repeat
+from utex.scheduler import (SessionMarker, TrialIterator, blockwise_shuffle2,
+                            mix, repeat)
 
 from flkl.share import Flkl, as_millis
 
@@ -92,23 +93,18 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
 
 if __name__ == "__main__":
-    from pyno.com import check_connected_board_info
-    from pyno.ino import (
-        ArduinoSetting,
-        Mode,
-        ArduinoConnecter,
-        PinMode,
-        ArduinoLineReader,
-    )
-    from utex.clap import PinoClap
-    from utex.agent import self_terminate, Reader, Observer, Recorder
-    from utex.scheduler import SessionMarker
-    from amas.connection import Register
-    from amas.env import Environment
-    from utex.fs import namefile, get_current_file_abspath
-
     from os import mkdir
     from os.path import exists, join
+
+    from amas.connection import Register
+    from amas.env import Environment
+    from pyno.com import check_connected_board_info
+    from pyno.ino import (ArduinoConnecter, ArduinoLineReader, ArduinoSetting,
+                          Mode, PinMode)
+    from utex.agent import Observer, Reader, Recorder, self_terminate
+    from utex.clap import PinoClap
+    from utex.fs import get_current_file_abspath, namefile
+    from utex.scheduler import SessionMarker
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")
