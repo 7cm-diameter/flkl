@@ -29,7 +29,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     decision_duration_millis = as_millis(decision_duration)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
-    boundary = expvars.get("boundary", 6.5)
+    boundary = expvars.get("go-nogo-boundary", 6.5)
     go_ratio = expvars.get("go-ratio", 1)
     go_max_duration = expvars.get("go-maximum-duration", 4.0)
     nogo_max_duration = expvars.get("nogo-maximum-duration", 20.0)
