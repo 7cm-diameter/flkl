@@ -184,7 +184,7 @@ if __name__ == "__main__":
         .assign_task(self_terminate)
     )
     observer = Observer()
-    recorder = Recorder(filename=filename)
+    recorder = Recorder(filename=filename, timing=True)
 
     agents = [controller, recorder, reader, observer]
     register = Register(agents)
