@@ -84,16 +84,19 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     if flick > boundary and is_licked:
                         ino.high_for(reward_pin, reward_duration_millis)
                         await flush_message_for(agent, reward_duration)
-                    elif flick < boundary and not is_licked:
+                    elif flick < boundary and is_licked:
                         await flush_message_for(agent, reward_duration)
-                    else:
                         await flush_message_for(agent, timeout_duration)
+                    else:
+                        await flush_message_for(agent, reward_duration)
                 else:
                     ino.flick_for(sound_pin, flick, flick_duration_millis)
                     await flush_message_for(agent, flick_duration)
                     if uniform() <= 0.5:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        await flush_message_for(agent, reward_duration_millis)
+                        await flush_message_for(agent, reward_duration)
+                    else:
+                        await flush_message_for(agent, reward_duration)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
