@@ -93,7 +93,7 @@ if __name__ == "__main__":
         elif board.serial_number == com_output_config.get("serial-number"):
             setting.apply_setting(com_output_config)
             flkl = Flkl(ArduinoConnecter(setting).connect())
-            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 5)]
+            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 6)]
             [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 7)]
 
     if reader_ino is None:
