@@ -24,7 +24,7 @@ async def present_reward(agent: Agent, ino: Flkl, expvars: dict):
     left_ratio = expvars.get("left-ratio", 1)
     right_ratio = expvars.get("right-ratio", 1)
     lr_ratio = mix([0], [1], left_ratio, right_ratio)
-    reward_per_trial = repeat(lr_ratio, number_of_trial // lr_ratio)
+    reward_per_trial = repeat(lr_ratio, number_of_trial // len(lr_ratio))
     np.random.shuffle(reward_per_trial)
 
     trials = TrialIterator(itis, reward_per_trial[:number_of_trial])
