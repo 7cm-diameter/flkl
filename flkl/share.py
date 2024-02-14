@@ -116,6 +116,34 @@ async def nogo_with_postpone(
             continue
 
 
+async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_duration: float,
+                                       min_duration: float, max_duration: float):
+    from time import perf_counter
+
+    min_duration -= decision_duration
+    _min_duration = min_duration
+
+    await flush_message_for(agent, decision_duration)
+
+    while max_duration >= 0.0 and agent.working():
+        s = perf_counter()
+        mail = await agent.try_recv(max_duration)
+        ellapsed_time = perf_counter() - s
+
+        max_duration -= ellapsed_time
+        min_duration -= ellapsed_time
+
+        if mail is None:
+            break
+
+        _, mess = mail
+
+        if mess != correct:
+            min_duration = _min_duration
+        elif mess == correct and min_duration <= 0.:
+            break
+
+
 async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
     from utex.agent import AgentAddress
 
