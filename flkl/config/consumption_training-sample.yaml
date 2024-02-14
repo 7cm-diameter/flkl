@@ -1,0 +1,24 @@
+Comport:
+  input:
+    serial-number: "24230303737351707072"
+    baudrate: 1000000
+    timeout: 1.0
+
+  output:
+    serial-number: "1423530383535140E1A0"
+    baudrate: 115200
+    sketch: "./ino"
+
+Experimental:
+  reward-pin: 4
+
+  reward-duration: 0.01
+  left-ratio: 1
+  right-ratio: 1
+
+  ITI: 10.
+  ITI-range: 5.
+  number-of-trial: 100
+
+Metadata:
+  subject: "name-of-subject"
