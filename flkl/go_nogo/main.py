@@ -71,7 +71,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         while agent.working():
             speaker.play(noise, blocking=False, loop=True)
             for i, (visual_flickr, audio_flickr), iti in trials:
-                print(f"visual={visual_flickr}, audio={audio_flickr}")
+                print(f"Trial {i}: visual={visual_flickr}, audio={audio_flickr}")
                 await flush_message_for(agent, iti)
                 if audio_flickr > 0:
                     ino.flick_for2(led_pin, sound_pin, visual_flickr, audio_flickr, flick_duration_millis)
