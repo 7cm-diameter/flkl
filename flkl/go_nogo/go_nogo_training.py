@@ -11,32 +11,6 @@ from utex.scheduler import (SessionMarker, TrialIterator, blockwise_shuffle2,
 from flkl.share import (Flkl, as_millis, detect_lick, flush_message_for,
                         go_with_limit, nogo_with_postpone, show_progress)
 
-go_ratio = 3
-nogo_ratio = 1
-go_signals = [6, 7, 8, 9]
-nogo_signals = [2, 3, 4, 5]
-sound_frequency = [2, 3, 4, 5, 6, 7, 8, 9, 20]
-
-go_nogo_signals = mix(go_signals, nogo_signals, go_ratio, nogo_ratio)
-visual_trial = repeat(1, len(go_nogo_signals))
-sound_trial = repeat(0, len(sound_frequency))
-visual_ratio = 2
-sound_ratio = 1
-
-frequency_combination = mix(go_nogo_signals, sound_frequency, visual_ratio, sound_ratio)
-modality_combination = mix(visual_trial, sound_trial, visual_ratio, sound_ratio)
-
-test_trial = repeat(1, len(frequency_combination))
-practice_trial = repeat(0, len(frequency_combination))
-test_ratio = 4
-practice_ratio = 1
-
-frequency_combination = repeat(frequency_combination, test_ratio + practice_ratio)
-modality_combination = repeat(modality_combination, test_ratio + practice_ratio)
-test_practice_combination = mix(test_trial, practice_trial, test_ratio, practice_ratio)
-
-blockwise_shufflen(len(frequency_combination), frequency_combination, modality_combination, test_practice_combination)
-
 
 async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     led_pin = expvars.get("led-pin", 3)
