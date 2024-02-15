@@ -65,12 +65,12 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         number_of_trial,
     )
 
-    trials = TrialIterator(flickr_per_trial, itis)
+    trials = TrialIterator(flickr_per_trial[:number_of_trial], itis)
 
     try:
         while agent.working():
             speaker.play(noise, blocking=False, loop=True)
-            for i, visual_flickr, audio_flickr, iti in trials:
+            for i, (visual_flickr, audio_flickr), iti in trials:
                 print(f"visual={visual_flickr}, audio={audio_flickr}")
                 await agent.sleep(iti)
                 if audio_flickr > 0:
