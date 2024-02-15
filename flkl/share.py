@@ -121,6 +121,7 @@ async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_dura
     from time import perf_counter
 
     min_duration -= decision_duration
+    max_duration -= decision_duration
     _min_duration = min_duration
 
     await flush_message_for(agent, decision_duration)
