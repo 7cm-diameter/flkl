@@ -31,7 +31,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     boundary = expvars.get("go-nogo-boundary", 6.5)
     go_ratio = expvars.get("go-ratio", 1)
     max_duration = expvars.get("maximum-duration", 10.0)
-    max_duration_millis = as_millis(max_duration)
+    MAX_DURATION_MILLIS = 60000
     min_duration = expvars.get("minimum-duration", 2.0)
     nogo_ratio = expvars.get("nogo-ratio", 1)
     go_signals = list(filter(lambda hz: hz > boundary, led_flick_hz))
@@ -78,7 +78,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, flick, led_pin)
                 await flush_message_for(agent, iti)
                 if is_visual:
-                    ino.flick_on(led_pin, flick, max_duration_millis)
+                    ino.flick_on(led_pin, flick, MAX_DURATION_MILLIS)
                     if flick > boundary:
                         await fixed_interval_with_postpone(
                             agent, response_pin[0], decision_duration, min_duration, max_duration
@@ -93,7 +93,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         ino.flick_off()
                         ino.high_for(reward_pin[1], reward_duration_millis)
                 else:
-                    ino.flick_for(sound_pin, flick, max_duration_millis)
+                    ino.flick_for(sound_pin, flick, MAX_DURATION_MILLIS)
                     if uniform() <= 0.5:
                         await fixed_interval_with_postpone(
                             agent, response_pin[0], decision_duration, min_duration, max_duration
