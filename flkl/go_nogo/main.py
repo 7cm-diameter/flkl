@@ -72,9 +72,9 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
             speaker.play(noise, blocking=False, loop=True)
             for i, (visual_flickr, audio_flickr), iti in trials:
                 print(f"visual={visual_flickr}, audio={audio_flickr}")
-                await agent.sleep(iti)
+                await flush_message_for(agent, iti)
                 if audio_flickr > 0:
-                    ino.flick_for2(led_pin, sound_pin, visual_flickr, audio_flickr, flick_duration)
+                    ino.flick_for2(led_pin, sound_pin, visual_flickr, audio_flickr, flick_duration_millis)
                     await flush_message_for(agent, flush_duration)
                     is_licked = await detect_lick(agent, decision_duration, 6)
                     if visual_flickr > boundary and is_licked:
@@ -91,13 +91,13 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 else:
                     ino.flick_on(led_pin, visual_flickr, FLICK_DURATION_MILLIS)
                     if visual_flickr > boundary:
-                        await go_with_limit(agent, response_pin[0], decision_duration, go_max_duration)
+                        await go_with_limit(agent, response_pin[0], flick_duration_millis, go_max_duration)
                         ino.flick_off()
                         ino.high_for(reward_pin, reward_duration_millis)
                         await flush_message_for(agent, reward_duration)
                     else:
                         await nogo_with_postpone(
-                            agent, response_pin[0], decision_duration, nogo_max_duration
+                            agent, response_pin[0], flick_duration_millis, nogo_max_duration
                         )
                         ino.flick_off()
                         await flush_message_for(agent, reward_duration)
