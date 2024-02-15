@@ -81,14 +81,14 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     ino.flick_on(led_pin, flick, FLICK_DURATION_MILLIS)
                     if flick > boundary:
                         await go_with_limit(
-                            agent, response_pin, decision_duration, go_max_duration
+                            agent, response_pin[0], decision_duration, go_max_duration
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin, reward_duration_millis)
                         await flush_message_for(agent, reward_duration)
                     else:
                         await nogo_with_postpone(
-                            agent, response_pin, decision_duration, nogo_max_duration
+                            agent, response_pin[0], decision_duration, nogo_max_duration
                         )
                         ino.flick_off()
                         await flush_message_for(agent, reward_duration)
