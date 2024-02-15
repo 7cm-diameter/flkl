@@ -24,7 +24,6 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     reward_duration = expvars.get("reward-duration", 0.02)
     reward_duration_millis = as_millis(reward_duration)
-    FLICK_DURATION_MILLIS = 60000
     decision_duration = expvars.get("decision-duration", 1.0)
     decision_duration_millis = as_millis(decision_duration)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
@@ -78,7 +77,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, flick, led_pin)
                 await flush_message_for(agent, iti)
                 if is_visual:
-                    ino.flick_on(led_pin, flick, FLICK_DURATION_MILLIS)
+                    ino.flick_on(led_pin, flick, max_duration)
                     if flick > boundary:
                         await fixed_interval_with_postpone(
                             agent, response_pin[0], decision_duration, min_duration, max_duration
@@ -106,6 +105,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin[1], reward_duration_millis)
+                await agent.sleep(reward_duration)
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
@@ -165,8 +165,8 @@ if __name__ == "__main__":
         elif board.serial_number == com_output_config.get("serial-number"):
             setting.apply_setting(com_output_config)
             flkl = Flkl(ArduinoConnecter(setting).connect())
-            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 5)]
-            [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 7)]
+            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 6)]
+            [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 8)]
 
     if reader_ino is None:
         raise ValueError(

@@ -147,7 +147,7 @@ async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_dura
 async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
     from utex.agent import AgentAddress
 
-    response_pin = expvars.get("response-pin", 6)
+    response_pin = expvars.get("response-pin", [6, 7])
 
     try:
         while agent.working():
@@ -156,7 +156,7 @@ async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
                 continue
             decoded_readline = readline.rstrip().decode("utf-8")
             event, time = as_eventtime(decoded_readline)
-            if event == response_pin:
+            if event in response_pin:
                 agent.send_to(AgentAddress.CONTROLLER.value, event)
             agent.send_to(AgentAddress.RECORDER.value, (time, event))
 
