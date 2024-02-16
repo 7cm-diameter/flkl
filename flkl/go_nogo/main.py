@@ -102,9 +102,9 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         ino.flick_off()
                         await flush_message_for(agent, reward_duration)
 
-        speaker.stop()
-        agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
-        agent.finish()
+            speaker.stop()
+            agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
+            agent.finish()
     except NotWorkingError:
         speaker.stop()
 
