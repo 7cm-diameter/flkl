@@ -182,7 +182,7 @@ if __name__ == "__main__":
     data_dir = join(get_current_file_abspath(__file__), "data")
     if not exists(data_dir):
         mkdir(data_dir)
-    config.metadata.update({"condition": "go-nogo-with-postpone"})
+    config.metadata.update({"condition": "lr-training"})
     filename = join(data_dir, namefile(config.metadata))
 
     controller = (
