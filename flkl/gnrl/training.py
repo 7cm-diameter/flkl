@@ -1,5 +1,4 @@
 from amas.agent import Agent
-from utex.clap import Config
 
 from flkl.share import Flkl
 
@@ -108,3 +107,99 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
             agent.finish()
     except NotWorkingError:
         pass
+
+
+if __name__ == "__main__":
+    from os import mkdir
+    from os.path import exists, join
+    from typing import Optional
+
+    from amas.agent import Agent
+    from amas.connection import Register
+    from amas.env import Environment
+    from pyno.com import check_connected_board_info
+    from pyno.ino import (ArduinoConnecter, ArduinoLineReader, ArduinoSetting,
+                          Mode, PinMode)
+    from utex.agent import AgentAddress, Observer, Recorder, self_terminate
+    from utex.clap import PinoClap
+    from utex.fs import get_current_file_abspath, namefile
+    from utex.scheduler import SessionMarker
+
+    from flkl.share import read
+
+    config = PinoClap().config()
+    com_input_config: Optional[dict] = config.comport.get("input")
+    com_output_config: Optional[dict] = config.comport.get("output")
+    if com_input_config is None or com_output_config is None:
+        raise ValueError("`com_input_config` and `com_output_config` are not defined.")
+    com_input_config.update({"mode": Mode.readeruno})
+    com_output_config.update({"mode": Mode.user})
+
+    if com_input_config is None and com_output_config is None:
+        raise Exception()
+
+    available_boards = check_connected_board_info()
+    for board in available_boards:
+        setting = ArduinoSetting.derive_from_portinfo(board)
+        if board.serial_number == com_input_config.get("serial-number"):
+            setting.apply_setting(com_input_config)
+            serial_number = com_input_config.get("serial-number")
+            print(f"Uploading sketch to reader arduino {serial_number}")
+        elif board.serial_number == com_output_config.get("serial-number"):
+            setting.apply_setting(com_output_config)
+            serial_number = com_output_config.get("serial-number")
+            print(f"Uploading sketch to controller arduino {serial_number}")
+        ArduinoConnecter(setting).write_sketch()
+
+    available_boards = check_connected_board_info()
+    reader_ino, flkl = None, None
+    for board in available_boards:
+        setting = ArduinoSetting.derive_from_portinfo(board)
+        if board.serial_number == com_input_config.get("serial-number"):
+            setting.apply_setting(com_input_config)
+            reader_ino = ArduinoLineReader(ArduinoConnecter(setting).connect())
+        elif board.serial_number == com_output_config.get("serial-number"):
+            setting.apply_setting(com_output_config)
+            flkl = Flkl(ArduinoConnecter(setting).connect())
+            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 6)]
+            [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 8)]
+
+    if reader_ino is None:
+        raise ValueError(
+            f"Input arduino (serial number: {com_input_config.get('serial-number')}) is not found."
+        )
+
+    if flkl is None:
+        raise ValueError(
+            f"Output arduino (serial number: {com_output_config.get('serial-number')}) is not found."
+        )
+
+    data_dir = join(get_current_file_abspath(__file__), "data")
+    if not exists(data_dir):
+        mkdir(data_dir)
+    config.metadata.update({"condition": "lr-training"})
+    filename = join(data_dir, namefile(config.metadata))
+
+    controller = (
+        Agent("CONTROLLER")
+        .assign_task(flickr_discrimination, ino=flkl, expvars=config.experimental)
+        .assign_task(self_terminate)
+    )
+
+    reader = (
+        Agent(AgentAddress.READER.value)
+        .assign_task(read, ino=reader_ino, expvars=config.experimental)
+        .assign_task(self_terminate)
+    )
+    observer = Observer()
+    recorder = Recorder(filename=filename, timing=True)
+
+    agents = [controller, recorder, reader, observer]
+    register = Register(agents)
+    env = Environment(agents)
+
+    try:
+        env.run()
+    except KeyboardInterrupt:
+        observer.send_all(SessionMarker.ABEND)
+        observer.finish()
