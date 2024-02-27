@@ -3,6 +3,11 @@ from amas.agent import Agent
 from flkl.share import Flkl
 
 
+def show_progress(trial: int, iti: float, is_visual: int, freq: float):
+    modality = "Visual" if is_visual else "Audio"
+    print(f"Trial: {trial}    ITI: {float}    Modality: {modality}    Frequency: {freq}")
+
+
 async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from amas.agent import NotWorkingError
     from numpy import arange
@@ -30,23 +35,21 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     reward_probability_for_audio = expvars.get("reward-probability-for-audio", .1)
 
-    visual_target_frequency = expvars.get("traget-frequency", 6)
-    visual_flickr_arange = tuple(expvars.get("visual-flickr-range", [-2., 2., .5]))
-    visual_distracter_frequency = list(filter(lambda x: x != visual_target_frequency, visual_target_frequency + arange(*visual_flickr_arange)))
+    visual_target_frequency = expvars.get("target-frequency", 6.)
+    visual_distracter_frequency = expvars.get("visual-distracter", [4., 5., 7., 8.])
     visual_traget_flickrs = repeat(visual_target_frequency, len(visual_distracter_frequency))
     visual_flickrs = mix(
-        visual_traget_flickrs,
+        [visual_target_frequency],
         visual_distracter_frequency,
-        expvars.get("target-ratio", 1),
+        expvars.get("target-ratio", 4),
         expvars.get("distracter-ratio", 1)
     )
 
-    audio_flickr_arange = tuple(expvars.get("audio-flickr-range", [-1., 1., .5]))
-    audio_distracter_frequency = list(filter(lambda x: x != visual_target_frequency, visual_target_frequency + arange(*audio_flickr_arange)))
+    audio_distracter_frequency = expvars.get("audio-distracter", [2., 5., 6., 7., 18.])
 
     modality_block = mix(
         repeat([1], len(visual_flickrs)),
-        repeat([0], len(audio_flickr_arange)),
+        repeat([0], len(audio_distracter_frequency)),
         expvars.get("visual-ratio", 1),
         expvars.get("audio-ratio", 1)
     )
@@ -57,16 +60,19 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         expvars.get("audio-ratio", 1)
     )
 
-    number_of_trial = expvars.get("number-of-trial", 500)
+    number_of_reward = expvars.get("number-of-reward", 200)
+    number_of_block = number_of_reward // expvars.get("target-ratio", 5)
     blocksize = len(modality_block)
     flickr_per_trial, modality_per_trial = blockwise_shufflen(
         blocksize,
-        repeat(flickr_block, number_of_trial // blocksize),
-        repeat(modality_block, number_of_trial // blocksize),
+        repeat(flickr_block, number_of_block),
+        repeat(modality_block, number_of_block),
     )
 
-    mean_interval = expvars.get("ITI", 5.)
-    range_interval = expvars.get("ITI-range", 0.)
+    number_of_trial = len(flickr_per_trial)
+
+    mean_interval = expvars.get("ITI", 10.)
+    range_interval = expvars.get("ITI-range", 5.)
     itis = uniform(
         mean_interval - range_interval,
         mean_interval + range_interval,
@@ -83,7 +89,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         while agent.working():
             speaker.play(noise, False, True)
             for i, freq, is_visual, iti in trials:
-                print(f"Trial {i}")
+                show_progress(i, iti, is_visual, freq)
                 if is_visual:
                     rewarded = freq == visual_target_frequency
                     ino.flick_for(visual_pin, freq, flickr_duration_millis)
