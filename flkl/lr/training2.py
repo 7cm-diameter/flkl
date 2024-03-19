@@ -29,21 +29,21 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     postpone = expvars.get("postpone", 2.0)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
-    boundary = expvars.get("go-nogo-boundary", 6.5)
-    go_ratio = expvars.get("go-ratio", 1)
+    boundary = expvars.get("lr-boundary", 6.5)
+    right_ratio = expvars.get("right-ratio", 1)
     max_duration = expvars.get("maximum-duration", 10.0)
     MAX_DURATION_MILLIS = 60000
     min_duration = expvars.get("minimum-duration", 2.0)
-    nogo_ratio = expvars.get("nogo-ratio", 1)
-    go_signals = list(filter(lambda hz: hz > boundary, led_flick_hz))
-    nogo_signals = list(filter(lambda hz: hz < boundary, led_flick_hz))
-    go_nogo_signals = mix(go_signals, nogo_signals, go_ratio, nogo_ratio)
-    visual_trial = repeat(1, len(go_nogo_signals))
+    left_ratio = expvars.get("left-ratio", 1)
+    right_signals = list(filter(lambda hz: hz > boundary, led_flick_hz))
+    left_signals = list(filter(lambda hz: hz < boundary, led_flick_hz))
+    lr_signals = mix(right_signals, left_signals, right_ratio, left_ratio)
+    visual_trial = repeat(1, len(lr_signals))
     sound_trial = repeat(0, len(sound_flick_hz))
     visual_ratio = expvars.get("visual-ratio", 1)
     sound_ratio = expvars.get("sound-ratio", 1)
     flicker_hz_combination = mix(
-        go_nogo_signals, sound_flick_hz, visual_ratio, sound_ratio
+        lr_signals, sound_flick_hz, visual_ratio, sound_ratio
     )
     modality_combination = mix(visual_trial, sound_trial, visual_ratio, sound_ratio)
 
