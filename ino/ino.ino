@@ -367,6 +367,7 @@ void loop() {
             }
             intervaltimer2 = micros();
           }
+          if (command == '\x19') { break; }
         };
 
         digiLOW[pin1]();

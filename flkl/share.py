@@ -21,6 +21,19 @@ class Flkl(ArduinoFlicker):
         )
         self.connection.write(message)
 
+    def flick_on2(self, pin1: int, pin2: int, hz1: float, hz2: float, millis: int):
+        hz1 = int(hz1 * 10)
+        hz2 = int(hz2 * 10)
+        message = (
+            b"\x16"
+            + as_bytes(pin1, 1)
+            + as_bytes(pin2, 1)
+            + as_bytes(hz1, 1)
+            + as_bytes(hz2, 1)
+            + as_bytes(millis, 2)
+        )
+        self.connection.write(message)
+
     def high_for(self, pin: int, millis: int):
         message = b"\x17" + as_bytes(pin, 1) + as_bytes(millis, 2)
         self.connection.write(message)
