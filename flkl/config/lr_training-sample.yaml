@@ -21,7 +21,8 @@ Experimental:
   flick-duration: 2.0
   maximum-duration: 4.0
   minimum-duration: 2.0
-  decision-duration: 2.0
+  decision-duration: 1.0
+  postpone: 2.0
   led-flick-hz:   [2, 9]
   sound-flick-hz:   [2, 4, 5, 6, 7, 8, 9, 20]
   go-nogo-boundary: 5.5

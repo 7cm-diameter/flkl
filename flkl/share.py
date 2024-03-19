@@ -117,14 +117,12 @@ async def nogo_with_postpone(
 
 
 async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_duration: float,
-                                       min_duration: float, max_duration: float):
+                                       min_duration: float, max_duration: float, postpone: float):
     from time import perf_counter
 
-    min_duration -= decision_duration
-    max_duration -= decision_duration
-    _min_duration = min_duration
+    max_duration -= (min_duration - decision_duration)
 
-    await flush_message_for(agent, decision_duration)
+    await flush_message_for(agent, min_duration - decision_duration)
 
     while max_duration >= 0.0 and agent.working():
         s = perf_counter()
@@ -132,7 +130,7 @@ async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_dura
         ellapsed_time = perf_counter() - s
 
         max_duration -= ellapsed_time
-        min_duration -= ellapsed_time
+        decision_duration -= ellapsed_time
 
         if mail is None:
             break
@@ -140,8 +138,8 @@ async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_dura
         _, mess = mail
 
         if mess != correct:
-            min_duration = _min_duration
-        elif mess == correct and min_duration <= 0.:
+            decision_duration = postpone
+        elif mess == correct and decision_duration <= 0.:
             break
 
 

@@ -26,6 +26,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     reward_duration_millis = as_millis(reward_duration)
     decision_duration = expvars.get("decision-duration", 1.0)
     decision_duration_millis = as_millis(decision_duration)
+    postpone = expvars.get("postpone", 2.0)
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("go-nogo-boundary", 6.5)
@@ -81,14 +82,14 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     ino.flick_on(led_pin, flick, MAX_DURATION_MILLIS)
                     if flick > boundary:
                         await fixed_interval_with_postpone(
-                            agent, response_pin[0], decision_duration, min_duration, max_duration
+                            agent, response_pin[0], decision_duration, min_duration, max_duration, postpone
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin[0], reward_duration_millis)
                         await flush_message_for(agent, reward_duration)
                     else:
                         await fixed_interval_with_postpone(
-                            agent, response_pin[1], decision_duration, min_duration, max_duration
+                            agent, response_pin[1], decision_duration, min_duration, max_duration, postpone
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin[1], reward_duration_millis)
@@ -96,13 +97,13 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     ino.flick_for(sound_pin, flick, MAX_DURATION_MILLIS)
                     if uniform() <= 0.5:
                         await fixed_interval_with_postpone(
-                            agent, response_pin[0], decision_duration, min_duration, max_duration
+                            agent, response_pin[0], decision_duration, min_duration, max_duration, postpone
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin[0], reward_duration_millis)
                     else:
                         await fixed_interval_with_postpone(
-                            agent, response_pin[1], decision_duration, min_duration, max_duration
+                            agent, response_pin[1], decision_duration, min_duration, max_duration, postpone
                         )
                         ino.flick_off()
                         ino.high_for(reward_pin[1], reward_duration_millis)
