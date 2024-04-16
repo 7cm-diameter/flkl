@@ -3,9 +3,9 @@ from amas.agent import Agent
 from flkl.share import Flkl
 
 
-def show_progress(trial: int, iti: float, is_visual: int, freq: float):
-    modality = "Visual" if is_visual else "Audio"
-    print(f"Trial: {trial}    ITI: {float}    Modality: {modality}    Frequency: {freq}")
+def show_progress(trial: int, iti: float, modality: int, freq: float):
+    mod = ["Visual-Audio", "Visual", "Audio"][modality]
+    print(f"Trial: {trial}    ITI: {iti}    Modality: {mod}    Frequency: {freq}")
 
 
 async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
@@ -18,8 +18,6 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                                 blockwise_shuffle2, mix, mixn, repeat)
 
     from flkl.share import as_millis, flush_message_for
-
-    expvars = dict()
 
     reward_pin = expvars.get("reward-pin", 4)
     response_pin = expvars.get("response-pin", [6])
@@ -64,7 +62,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                       ]
     )
 
-    iti = expvars.get("ITI", 13.0)
+    iti_mean = expvars.get("ITI", 13.0)
     iti_range = expvars.get("ITI-range", 5.0)
     number_of_reward = expvars.get("number-of-reward", 200)
     maximum_trial = 500
@@ -81,9 +79,9 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         speaker.play(noise, blocking=False, loop=True)
         while agent.working() and number_of_reward > 0:
             for i, modality, flickr in trials:
-                iti = uniform(iti - iti_range, iti + iti_range)
+                iti= uniform(iti_mean - iti_range, iti_mean + iti_range)
                 show_progress(i, iti, modality, flickr)
-                await flush_message_for(agent, iti)
+                await flush_message_for(agent, iti_mean)
                 if modality == 0:
                     ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
