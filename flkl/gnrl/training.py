@@ -15,9 +15,11 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from utex.agent import AgentAddress
     from utex.audio import Speaker, WhiteNoise
     from utex.scheduler import (SessionMarker, TrialIterator,
-                                blockwise_shufflen, mix, repeat)
+                                blockwise_shuffle2, mix, mixn, repeat)
 
     from flkl.share import as_millis, flush_message_for
+
+    expvars = dict()
 
     reward_pin = expvars.get("reward-pin", 4)
     response_pin = expvars.get("response-pin", [6])
@@ -27,93 +29,88 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     noise = WhiteNoise()
     speaker = Speaker(expvars.get("speaker-id", 1))
 
-    reward_duration = expvars.get("reward-duration", 0.02)
+    reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
 
     reward_duration_millis = as_millis(reward_duration)
     flickr_duration_millis = as_millis(flickr_duration)
 
-    reward_probability_for_audio = expvars.get("reward-probability-for-audio", .1)
+    audio_reward_probability = expvars.get("reward-probability-for-audio", 0.2)
 
-    visual_target_frequency = expvars.get("target-frequency", 6.)
-    visual_distracter_frequency = expvars.get("visual-distracter", [4., 5., 7., 8.])
-    visual_traget_flickrs = repeat(visual_target_frequency, len(visual_distracter_frequency))
-    visual_flickrs = mix(
-        [visual_target_frequency],
-        visual_distracter_frequency,
-        expvars.get("target-ratio", 4),
-        expvars.get("distracter-ratio", 1)
+    flickr_sync_rwd = expvars.get("rewarded-frequency", 7)
+    flickr_sync_ext = expvars.get("extinction-frequency", [4, 10])
+    flickr_sync = mix(
+        repeat(flickr_sync_rwd, len(flickr_sync_ext)),
+        flickr_sync_ext,
+        expvars.get("reward-ratio", 1),
+        expvars.get("extinction-ratio", 1)
+    )
+    flickr_visual = flickr_sync
+    flickr_audio = expvars.get("audio-frequency", [2, 4, 7, 10, 20])
+    flickrs = mixn(
+        [flickr_sync, flickr_visual, flickr_audio],
+        [
+            expvars.get("sync-ratio", 1),
+            expvars.get("visual-ratio", 1),
+            expvars.get("audio-ratio", 1),
+        ]
     )
 
-    audio_distracter_frequency = expvars.get("audio-distracter", [2., 5., 6., 7., 18.])
-
-    modality_block = mix(
-        repeat([1], len(visual_flickrs)),
-        repeat([0], len(audio_distracter_frequency)),
-        expvars.get("visual-ratio", 1),
-        expvars.get("audio-ratio", 1)
-    )
-    flickr_block = mix(
-        visual_flickrs,
-        audio_distracter_frequency,
-        expvars.get("visual-ratio", 1),
-        expvars.get("audio-ratio", 1)
+    modalities = mixn([[0], [1], [2]],
+                      [
+                          len(flickr_sync) * expvars.get("sync-ratio", 1),
+                          len(flickr_visual) * expvars.get("visual-ratio", 1),
+                          len(flickr_audio) * expvars.get("audio-ratio", 1)
+                      ]
     )
 
+    iti = expvars.get("ITI", 13.0)
+    iti_range = expvars.get("ITI-range", 5.0)
     number_of_reward = expvars.get("number-of-reward", 200)
-    number_of_block = number_of_reward // expvars.get("target-ratio", 5)
-    blocksize = len(modality_block)
-    flickr_per_trial, modality_per_trial = blockwise_shufflen(
-        blocksize,
-        repeat(flickr_block, number_of_block),
-        repeat(modality_block, number_of_block),
+    maximum_trial = 500
+
+    flickr_per_trial, modality_per_trial = blockwise_shuffle2(
+        repeat(flickrs, maximum_trial // len(flickrs) + 1),
+        repeat(modalities, maximum_trial // len(flickrs) + 1),
+        len(flickrs)
     )
 
-    number_of_trial = len(flickr_per_trial)
-
-    mean_interval = expvars.get("ITI", 10.)
-    range_interval = expvars.get("ITI-range", 5.)
-    itis = uniform(
-        mean_interval - range_interval,
-        mean_interval + range_interval,
-        number_of_trial
-    )
-
-    trials = TrialIterator(
-        flickr_per_trial,
-        modality_per_trial,
-        itis
-    )
+    trials = TrialIterator(modalities[:maximum_trial], flickr_per_trial)
 
     try:
-        while agent.working():
-            speaker.play(noise, False, True)
-            for i, freq, is_visual, iti in trials:
-                show_progress(i, iti, is_visual, freq)
-                if is_visual:
-                    rewarded = freq == visual_target_frequency
-                    ino.flick_for(visual_pin, freq, flickr_duration_millis)
-                    await flush_message_for(agent, flickr_duration)
-                    if rewarded:
+        speaker.play(noise, blocking=False, loop=True)
+        while agent.working() and number_of_reward > 0:
+            for i, modality, flickr in trials:
+                iti = uniform(iti - iti_range, iti + iti_range)
+                show_progress(i, iti, modality, flickr)
+                await flush_message_for(agent, iti)
+                if modality == 0:
+                    ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
+                    await agent.sleep(flickr_duration)
+                    if flickr == flickr_sync_rwd:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        await flush_message_for(agent, reward_duration)
-                    else:
-                        await flush_message_for(agent, reward_duration)
+                        number_of_reward -= 1
+                elif modality == 1:
+                    ino.flick_for(visual_pin, flickr, flickr_duration_millis)
+                    await agent.sleep(flickr_duration)
+                    if flickr == flickr_sync_rwd:
+                        ino.high_for(reward_pin, reward_duration_millis)
+                        number_of_reward -= 1
                 else:
-                    rewarded = uniform() <= reward_probability_for_audio
-                    ino.flick_for(audio_pin, freq, flickr_duration_millis)
-                    await flush_message_for(agent, flickr_duration)
-                    if rewarded:
+                    ino.flick_for(audio_pin, flickr, flickr_duration_millis)
+                    await agent.sleep(flickr_duration)
+                    if uniform() < audio_reward_probability:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        await flush_message_for(agent, reward_duration)
-                    else:
-                        await flush_message_for(agent, reward_duration)
+                        number_of_reward -= 1
+                await agent.sleep(reward_duration)
+                if number_of_reward <= 0:
+                    break
             speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
+        speaker.stop()
         pass
-
 
 if __name__ == "__main__":
     from os import mkdir
