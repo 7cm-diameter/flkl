@@ -73,7 +73,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         len(flickrs)
     )
 
-    trials = TrialIterator(modalities[:maximum_trial], flickr_per_trial)
+    trials = TrialIterator(modality_per_trial[:maximum_trial], flickr_per_trial[:maximum_trial])
 
     try:
         speaker.play(noise, blocking=False, loop=True)
