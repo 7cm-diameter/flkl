@@ -33,3 +33,6 @@ Experimental:
   number-of-reward: 200
   ITI: 13.
   ITI-range: 5.
+
+Metadata:
+  subject: "name-of-subject"
