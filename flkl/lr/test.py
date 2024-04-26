@@ -78,16 +78,17 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         while agent.working() and number_of_reward > 0:
             for i, (vhz, ahz), trialtype in trials:
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
+                print(f"Trial: {i} Visual: {vhz} Audio: {ahz} Trialtype: {trialtype}")
                 await flush_message_for(agent, iti)
                 if vhz == 0:
                     correct_idx = 0 if vhz > boundary else 1
-                    ino.flick_for(sound_pin, ahz, stimulus_duration)
+                    ino.flick_for(sound_pin, ahz, stimulus_duration_millis)
                 elif ahz == 0:
                     correct_idx = 0 if uniform() >= 0.5 else 1
-                    ino.flick_for(led_pin, vhz, stimulus_duration)
+                    ino.flick_for(led_pin, vhz, stimulus_duration_millis)
                 else:
                     correct_idx = 0 if vhz > boundary else 1
-                    ino.flick_for2(led_pin, sound_pin, vhz, ahz, stimulus_duration)
+                    ino.flick_for2(led_pin, sound_pin, vhz, ahz, stimulus_duration_millis)
                 correct = await fixed_time_with_error(agent, response_pin[correct_idx], stimulus_duration, decision_duration)
                 if trialtype or correct:
                      ino.high_for(reward_pin[correct_idx], reward_duration_millis)
