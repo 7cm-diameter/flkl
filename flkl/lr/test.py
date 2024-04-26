@@ -81,10 +81,10 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 print(f"Trial: {i} Visual: {vhz} Audio: {ahz} Trialtype: {trialtype}")
                 await flush_message_for(agent, iti)
                 if vhz == 0:
-                    correct_idx = 0 if vhz > boundary else 1
+                    correct_idx = 0 if uniform() >= 0.5 else 1
                     ino.flick_for(sound_pin, ahz, stimulus_duration_millis)
                 elif ahz == 0:
-                    correct_idx = 0 if uniform() >= 0.5 else 1
+                    correct_idx = 0 if vhz > boundary else 1
                     ino.flick_for(led_pin, vhz, stimulus_duration_millis)
                 else:
                     correct_idx = 0 if vhz > boundary else 1
