@@ -169,7 +169,7 @@ async def fixed_time_with_error(agent: Agent, correct: int,
         decision_duration -= perf_counter() - s
 
         if mail is None:
-            return False
+            continue
 
         _, mess = mail
         if mess == correct:
