@@ -156,6 +156,29 @@ async def fixed_interval_with_postpone(agent: Agent, correct: int, decision_dura
             break
 
 
+async def fixed_time_with_error(agent: Agent, correct: int,
+                                stimulus_duration: float, decision_duration: float) -> bool :
+    from time import perf_counter
+
+    await flush_message_for(agent, stimulus_duration - decision_duration)
+
+    ncorrect = 0
+    while decision_duration >= 0.:
+        s = perf_counter()
+        mail = await agent.try_recv(decision_duration)
+        decision_duration -= perf_counter() - s
+
+        if mail is None:
+            return False
+
+        _, mess = mail
+        if mess == correct:
+            ncorrect += 1
+        else:
+            ncorrect -= 1
+
+    return ncorrect > 0
+
 async def read(agent: Agent, ino: ArduinoLineReader, expvars: dict):
     from utex.agent import AgentAddress
 
