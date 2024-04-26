@@ -30,11 +30,11 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     led_flick_hz = expvars.get("led-flick-hz", [2, 10])
     sound_flick_hz = expvars.get("sound-flick-hz", [2, 4, 5, 6, 7, 8, 9, 20])
     boundary = expvars.get("lr-boundary", 6.5)
-    right_ratio = expvars.get("left-ratio", 1)
     max_duration = expvars.get("maximum-duration", 10.0)
     MAX_DURATION_MILLIS = 60000
     min_duration = expvars.get("minimum-duration", 2.0)
-    left_ratio = expvars.get("right-ratio", 1)
+    left_ratio = expvars.get("left-ratio", 1)
+    right_ratio = expvars.get("right-ratio", 1)
     right_signals = list(filter(lambda hz: hz > boundary, led_flick_hz))
     left_signals = list(filter(lambda hz: hz < boundary, led_flick_hz))
     lr_signals = mix(right_signals, left_signals, right_ratio, left_ratio)
