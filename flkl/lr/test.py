@@ -55,8 +55,8 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                    ])
 
     trialtypes = mix([0], [1],
-                     len(flickrs) * expvars.get("train-ratio", 1),
-                     len(flickrs) * expvars.get("test-ratio", 1))
+                     len(flickrs) * expvars.get("test-ratio", 1),
+                     len(flickrs) * expvars.get("train-ratio", 1))
 
     flickrs *= (expvars.get("train-ratio", 1) + expvars.get("test-ratio", 1))
 
