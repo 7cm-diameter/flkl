@@ -224,9 +224,39 @@ void loop() {
       }
       */
 
+      // Flkl.flick_for
       case '\x13': {
         while((hz1 = Serial.read()) == -1) {};
-        // while((duration = Serial.read()) == -1) {};
+        double flickr_duration = read_2bytes();
+        double pulse_duration = read_2bytes();
+        double pulse_interval = 10000 / hz1;
+
+        unsigned long pulse_interval_micros = from_millis_to_micros(pulse_interval);
+        unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
+        unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
+        unsigned long waitingtime  = pulse_duration_micros;
+        digiHIGH[pin1]();
+        flicker_states[pin1] = 1;
+        unsigned long starttime = micros();
+        unsigned long swtichtimer = starttime;
+
+        while(micros() - starttime < flickr_duration_micros) {
+          if ((micros() - swtichtimer) >= waitingtime) {
+            if (flicker_states[pin1]) {
+              digiLOW[pin1]();
+              flicker_states[pin1] = 0;
+              waitingtime = pulse_interval_micros;
+            } else {
+              digiHIGH[pin1]();
+              flicker_states[pin1] = 1;
+              waitingtime = pulse_duration_micros;
+            }
+            swtichtimer = micros();
+          }
+        }
+
+        /*
+        while((duration = Serial.read()) == -1) {};
         double duration = read_2bytes();
         double flicktime = hz1 * duration / 10000;
 
@@ -248,14 +278,46 @@ void loop() {
             intervaltimer1 = micros();
           }
         };
+        */
 
         digiLOW[pin1]();
         flicker_states[pin1] = 0;
         break;
       }
 
+      // Flkl.flick_on
       case '\x14': {
         while((hz1 = Serial.read()) == -1) {};
+        double flickr_duration = read_2bytes();
+        double pulse_duration = read_2bytes();
+        double pulse_interval = 10000 / hz1;
+
+        unsigned long pulse_interval_micros = from_millis_to_micros(pulse_interval);
+        unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
+        unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
+        unsigned long waitingtime  = pulse_duration_micros;
+        digiHIGH[pin1]();
+        flicker_states[pin1] = 1;
+        unsigned long starttime = micros();
+        unsigned long swtichtimer = starttime;
+
+        while(micros() - starttime < flickr_duration_micros && (command = Serial.read()) == -1) {
+          if ((micros() - swtichtimer) >= waitingtime) {
+            if (!flicker_states[pin1]) {
+              digiLOW[pin1]();
+              flicker_states[pin1] = 0;
+              waitingtime = pulse_interval_micros;
+            } else {
+              digiHIGH[pin1]();
+              flicker_states[pin1] = 1;
+              waitingtime = pulse_duration_micros;
+            }
+            swtichtimer = micros();
+          }
+          if (command == '\x19') { break; }
+        }
+
+        /*
         double duration = read_2bytes();
         double flicktime = hz1 * duration / 10000;
 
@@ -278,16 +340,67 @@ void loop() {
           }
           if (command == '\x19') { break; }
         };
+        */
 
         digiLOW[pin1]();
         flicker_states[pin1] = 0;
         break;
       }
 
+      // flick_for2
       case '\x15': {
         while((pin2 = Serial.read()) == -1) {};
         while((hz1 = Serial.read()) == -1) {};
         while((hz2 = Serial.read()) == -1) {};
+        double flickr_duration = read_2bytes();
+        double pulse_duration = read_2bytes();
+        double pulse_interval1 = 10000 / hz1;
+        double pulse_interval2 = 10000 / hz2;
+
+        unsigned long pulse_interval_micros1 = from_millis_to_micros(pulse_interval1);
+        unsigned long pulse_interval_micros2 = from_millis_to_micros(pulse_interval2);
+        unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
+        unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
+        unsigned long waitingtime1 = pulse_duration_micros;
+        unsigned long waitingtime2 = pulse_duration_micros;
+        digiHIGH[pin1]();
+        digiHIGH[pin2]();
+        flicker_states[pin1] = 1;
+        flicker_states[pin2] = 1;
+        unsigned long starttime = micros();
+        unsigned long swtichtimer1 = starttime;
+        unsigned long swtichtimer2 = starttime;
+
+        while(micros() - starttime < flickr_duration_micros) {
+          unsigned long current_time = micros();
+          if ((current_time - swtichtimer1) >= waitingtime1) {
+            if (flicker_states[pin1]) {
+              digiLOW[pin1]();
+              flicker_states[pin1] = 0;
+              waitingtime1 = pulse_interval_micros1;
+            } else {
+              digiHIGH[pin1]();
+              flicker_states[pin1] = 1;
+              waitingtime1 = pulse_duration_micros;
+            }
+            swtichtimer1 = micros();
+          }
+
+          if ((current_time - swtichtimer2) >= waitingtime2) {
+            if (flicker_states[pin2]) {
+              digiLOW[pin2]();
+              flicker_states[pin2] = 0;
+              waitingtime2 = pulse_interval_micros2;
+            } else {
+              digiHIGH[pin2]();
+              flicker_states[pin2] = 1;
+              waitingtime2 = pulse_duration_micros;
+            }
+            swtichtimer2 = micros();
+          }
+        }
+
+        /*
         double duration = read_2bytes();
         double flicktime1 = hz1 * duration / 10000;
         double flicktime2 = hz2 * duration / 10000;
@@ -322,6 +435,7 @@ void loop() {
             intervaltimer2 = micros();
           }
         };
+        */
 
         digiLOW[pin1]();
         digiLOW[pin2]();
@@ -330,10 +444,61 @@ void loop() {
         break;
       }
 
+      // flick_on2
       case '\x16': {
         while((pin2 = Serial.read()) == -1) {};
         while((hz1 = Serial.read()) == -1) {};
         while((hz2 = Serial.read()) == -1) {};
+        double flickr_duration = read_2bytes();
+        double pulse_duration = read_2bytes();
+        double pulse_interval1 = 10000 / hz1;
+        double pulse_interval2 = 10000 / hz2;
+
+        unsigned long pulse_interval_micros1 = from_millis_to_micros(pulse_interval1);
+        unsigned long pulse_interval_micros2 = from_millis_to_micros(pulse_interval2);
+        unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
+        unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
+        unsigned long waitingtime1 = pulse_duration_micros;
+        unsigned long waitingtime2 = pulse_duration_micros;
+        digiHIGH[pin1]();
+        digiHIGH[pin2]();
+        flicker_states[pin1] = 1;
+        flicker_states[pin2] = 1;
+        unsigned long starttime = micros();
+        unsigned long swtichtimer1 = starttime;
+        unsigned long swtichtimer2 = starttime;
+
+        while(micros() - starttime < flickr_duration_micros && (command = Serial.read()) == -1) {
+          unsigned long current_time = micros();
+          if ((current_time - swtichtimer1) >= waitingtime1) {
+            if (flicker_states[pin1]) {
+              digiLOW[pin1]();
+              flicker_states[pin1] = 0;
+              waitingtime1 = pulse_interval_micros1;
+            } else {
+              digiHIGH[pin1]();
+              flicker_states[pin1] = 1;
+              waitingtime1 = pulse_duration_micros;
+            }
+            swtichtimer1 = micros();
+          }
+
+          if ((current_time - swtichtimer2) >= waitingtime2) {
+            if (flicker_states[pin2]) {
+              digiLOW[pin2]();
+              flicker_states[pin2] = 0;
+              waitingtime2 = pulse_interval_micros2;
+            } else {
+              digiHIGH[pin2]();
+              flicker_states[pin2] = 1;
+              waitingtime2 = pulse_duration_micros;
+            }
+            swtichtimer2 = micros();
+          }
+          if (command == '\x19') { break; }
+        }
+
+        /*
         double duration = read_2bytes();
         double flicktime1 = hz1 * duration / 10000;
         double flicktime2 = hz2 * duration / 10000;
@@ -369,6 +534,7 @@ void loop() {
           }
           if (command == '\x19') { break; }
         };
+        */
 
         digiLOW[pin1]();
         digiLOW[pin2]();
