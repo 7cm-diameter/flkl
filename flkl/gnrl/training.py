@@ -24,8 +24,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     audio_pin = expvars.get("audio-pin", 2)
     visual_pin = expvars.get("visual-pin", 3)
 
-    noise = WhiteNoise()
-    speaker = Speaker(expvars.get("speaker-id", 1))
+    # noise = WhiteNoise()
+    # speaker = Speaker(expvars.get("speaker-id", 1))
 
     reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
@@ -76,7 +76,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     trials = TrialIterator(modality_per_trial[:maximum_trial], flickr_per_trial[:maximum_trial])
 
     try:
-        speaker.play(noise, blocking=False, loop=True)
+        # speaker.play(noise, blocking=False, loop=True)
         while agent.working() and number_of_reward > 0:
             for i, modality, flickr in trials:
                 iti= uniform(iti_mean - iti_range, iti_mean + iti_range)
@@ -103,11 +103,11 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 await agent.sleep(reward_duration)
                 if number_of_reward <= 0:
                     break
-            speaker.stop()
+            # speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
-        speaker.stop()
+        # speaker.stop()
         pass
 
 if __name__ == "__main__":

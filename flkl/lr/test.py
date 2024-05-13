@@ -23,7 +23,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     response_pin = expvars.get("response-pin", [6, 7])
 
     noise = WhiteNoise()
-    speaker = Speaker(speaker_id)
+    # speaker = Speaker(speaker_id)
 
     reward_duration = expvars.get("reward-duration", 0.02)
     reward_duration_millis = as_millis(reward_duration)
@@ -74,7 +74,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     trials = TrialIterator(flickr_per_trial, type_per_trial)
 
     try:
-        speaker.play(noise, blocking=False, loop=True)
+        # speaker.play(noise, blocking=False, loop=True)
         while agent.working() and number_of_reward > 0:
             for i, (vhz, ahz), trialtype in trials:
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
@@ -96,11 +96,11 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 await agent.sleep(reward_duration)
                 if number_of_reward <= 0:
                     break
-            speaker.stop()
+            # speaker.stop()
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
-        speaker.stop()
+        # speaker.stop()
         pass
 
 
