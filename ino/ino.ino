@@ -303,7 +303,7 @@ void loop() {
 
         while(micros() - starttime < flickr_duration_micros && (command = Serial.read()) == -1) {
           if ((micros() - swtichtimer) >= waitingtime) {
-            if (!flicker_states[pin1]) {
+            if (flicker_states[pin1]) {
               digiLOW[pin1]();
               flicker_states[pin1] = 0;
               waitingtime = pulse_interval_micros;
