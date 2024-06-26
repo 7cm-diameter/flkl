@@ -10,7 +10,7 @@ from utex.scheduler import (SessionMarker, TrialIterator, blockwise_shuffle,
                             blockwise_shuffle2, blockwise_shufflen, mix,
                             repeat)
 
-from flkl.share import (Flkl, as_millis, detect_lick, flush_message_for,
+from flkl.share import (Flkl, as_millis, count_lick, flush_message_for,
                         go_with_limit, nogo_with_postpone, show_progress)
 
 
@@ -76,7 +76,7 @@ async def conditional_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 if audio_flickr > 0:
                     ino.flick_for2(led_pin, sound_pin, visual_flickr, audio_flickr, flick_duration_millis)
                     await flush_message_for(agent, flush_duration)
-                    is_licked = await detect_lick(agent, decision_duration, 6)
+                    is_licked = await count_lick(agent, decision_duration, 6)
                     if visual_flickr > boundary and is_licked:
                         ino.high_for(reward_pin, reward_duration_millis)
                         await flush_message_for(agent, reward_duration)

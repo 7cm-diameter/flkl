@@ -11,7 +11,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from utex.scheduler import (SessionMarker, TrialIterator,
                                 blockwise_shufflen, mix, repeat)
 
-    from flkl.share import (as_millis, detect_lick, flush_message_for,
+    from flkl.share import (as_millis, count_lick, flush_message_for,
                             go_with_limit, nogo_with_postpone)
 
     reward_pin = expvars.get("reward-pin", 4)
@@ -114,7 +114,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                         is_go = freq > boundary
                         ino.flick_for(visual_pin, freq, minimum_flickr_duration_millis)
                         await flush_message_for(agent, flush_duration)
-                        licked = await detect_lick(agent, decision_duration, response_pin[0])
+                        licked = await count_lick(agent, decision_duration, response_pin[0])
                         if is_go and licked:
                             ino.high_for(reward_pin, reward_duration_millis)
                             await flush_message_for(agent, reward_duration)

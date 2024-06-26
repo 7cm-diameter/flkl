@@ -80,10 +80,10 @@ async def flush_message_for(agent: Agent, duration: float):
         duration -= e - s
 
 
-async def detect_lick(agent: Agent, duration: float, target):
+async def count_lick(agent: Agent, duration: float, target) -> int:
     from time import perf_counter
 
-    licked = False
+    nlick = 0
 
     while duration >= 0.0 and agent.working():
         s = perf_counter()
@@ -93,8 +93,8 @@ async def detect_lick(agent: Agent, duration: float, target):
             continue
         _, mess = mail
         if mess == target:
-            licked = True
-    return licked
+            nlick += 1
+    return nlick
 
 
 async def go_with_limit(
