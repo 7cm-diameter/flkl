@@ -9,7 +9,6 @@ def show_progress(trial: int, iti: float, modality: int, freq: float):
 
 
 async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
-    expvars = dict()
     from amas.agent import NotWorkingError
     from numpy import arange
     from numpy.random import uniform
