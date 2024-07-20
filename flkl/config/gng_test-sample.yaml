@@ -24,7 +24,7 @@ Experimental:
 
   rewarded-frequency: [10, 12, 14]
   extinction-frequency: [4, 6, 8]
-  audio-frequnecy: [7, 9, 11, 13]
+  audio-frequency: [7, 9, 11, 13]
 
   reward-ratio: 1
   extinction-ratio: 1
