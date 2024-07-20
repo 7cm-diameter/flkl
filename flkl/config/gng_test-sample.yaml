@@ -1,0 +1,41 @@
+Comport:
+  input:
+    serial-number: "24230303737351707072"
+    baudrate: 1000000
+    timeout: 1.0
+
+  output:
+    serial-number: "1423530383535140E1A0"
+    baudrate: 115200
+    sketch: "./ino"
+
+Experimental:
+  audio-pin: 2
+  visual-pin: 3
+  reward-pin: [4]
+  response-pin: [6]
+  speaker-id: 2
+
+  reward-duration: 0.01
+  flickr-duration: 2.
+  decision-duration: 1.
+  required-lick: 0
+  reward-probability-for-audio: 0.0
+
+  rewarded-frequency: [10, 12, 14]
+  extinction-frequency: [4, 6, 8]
+  audio-frequnecy: [7, 9, 11, 13]
+
+  reward-ratio: 1
+  extinction-ratio: 1
+  sync-ratio: 1
+  async-ratio: 1
+  visual-ratio: 1
+  audio-ratio: 1
+
+  number-of-reward: 200
+  ITI: 15.
+  ITI-range: 5.
+
+Metadata:
+  subject: "name-of-subject"
