@@ -91,14 +91,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
                 show_progress(i, iti, modality, vhz, ahz)
                 await flush_message_for(agent, iti_mean)
-                if modality == 0:
-                    ino.flick_for2(visual_pin, audio_pin, vhz, ahz, flickr_duration_millis)
-                    await flush_message_for(agent, flickr_duration - decision_duration)
-                    nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if vhz in flickr_sync_rwd and nlick >= required_lick:
-                        ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
-                if modality == 1:
+                if modality == 0 or modality == 1:
                     ino.flick_for2(visual_pin, audio_pin, vhz, ahz, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
