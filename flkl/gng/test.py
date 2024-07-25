@@ -1,4 +1,5 @@
 from amas.agent import Agent
+
 from flkl.share import Flkl
 
 
@@ -11,12 +12,13 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from itertools import product
 
     from amas.agent import NotWorkingError
-    from flkl.share import as_millis, count_lick, flush_message_for
     from numpy import arange
     from numpy.random import uniform
     from utex.agent import AgentAddress
     from utex.scheduler import (SessionMarker, TrialIterator,
                                 blockwise_shuffle2, mix, mixn, repeat)
+
+    from flkl.share import as_millis, count_lick, flush_message_for
 
     reward_pin = expvars.get("reward-pin", 4)
     response_pin = expvars.get("response-pin", [6])
@@ -93,21 +95,21 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     ino.flick_for2(visual_pin, audio_pin, vhz, ahz, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if flickr in flickr_sync_rwd and nlick >= required_lick:
+                    if vhz in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
                         number_of_reward -= 1
                 if modality == 1:
                     ino.flick_for2(visual_pin, audio_pin, vhz, ahz, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if flickr in flickr_sync_rwd and nlick >= required_lick:
+                    if vhz in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
                         number_of_reward -= 1
                 elif modality == 2:
                     ino.flick_for(visual_pin, vhz, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if flickr in flickr_sync_rwd and nlick >= required_lick:
+                    if vhz in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
                         number_of_reward -= 1
                 else:
@@ -132,7 +134,6 @@ if __name__ == "__main__":
     from amas.agent import Agent
     from amas.connection import Register
     from amas.env import Environment
-    from flkl.share import read
     from pyno.com import check_connected_board_info
     from pyno.ino import (ArduinoConnecter, ArduinoLineReader, ArduinoSetting,
                           Mode, PinMode)
@@ -140,6 +141,8 @@ if __name__ == "__main__":
     from utex.clap import PinoClap
     from utex.fs import get_current_file_abspath, namefile
     from utex.scheduler import SessionMarker
+
+    from flkl.share import read
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")
