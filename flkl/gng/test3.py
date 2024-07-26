@@ -38,7 +38,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     dummy_flickr = [0]
     flickr_async_test = expvars.get("test-frequency", 9)
     flickr_sync_rwd = expvars.get("rewarded-frequency", [10, 12, 14])
-    flickr_sync_ext = expvars.get("extinction-frequency", [4, 6, 8, flickr_async_test])
+    flickr_sync_ext = expvars.get("extinction-frequency", [4, 6, 8]) + [flickr_async_test]
 
     flickr_sync = mix(
         flickr_sync_rwd,
