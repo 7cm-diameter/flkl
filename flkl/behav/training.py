@@ -1,16 +1,14 @@
 from amas.agent import Agent
 
-from flkl.share import Flkl
+from flkl.behav.share import Flkl
 
 
-def show_progress(trial: int, iti: float, modality: int, vhz: float, ahz: float):
-    mod = ["Sync", "Async", "Visual", "Audio"][modality]
-    print(f"Trial: {trial}    ITI: {iti}    Modality: {mod}    Vhz: {vhz}    Ahz: {ahz}")
+def show_progress(trial: int, iti: float, modality: int, freq: float):
+    mod = ["Visual-Audio", "Visual", "Audio"][modality]
+    print(f"Trial: {trial}    ITI: {iti}    Modality: {mod}    Frequency: {freq}")
 
 
 async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
-    from itertools import product
-
     from amas.agent import NotWorkingError
     from numpy import arange
     from numpy.random import uniform
@@ -18,7 +16,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from utex.scheduler import (SessionMarker, TrialIterator,
                                 blockwise_shuffle2, mix, mixn, repeat)
 
-    from flkl.share import as_millis, count_lick, flush_message_for
+    from flkl.behav.share import as_millis, count_lick, flush_message_for
 
     reward_pin = expvars.get("reward-pin", 4)
     response_pin = expvars.get("response-pin", [6])
@@ -35,9 +33,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     audio_reward_probability = expvars.get("reward-probability-for-audio", 0.2)
 
-    dummy_flickr = [0]
-    flickr_sync_rwd = expvars.get("rewarded-frequency", [10, 12, 14])
-    flickr_sync_ext = expvars.get("extinction-frequency", [4, 6, 8])
+    flickr_sync_rwd = expvars.get("rewarded-frequency", [12, 14, 16])
+    flickr_sync_ext = expvars.get("extinction-frequency", [6, 8, 10])
     flickr_sync = mix(
         flickr_sync_rwd,
         flickr_sync_ext,
@@ -45,27 +42,19 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         expvars.get("extinction-ratio", 1)
     )
     flickr_visual = flickr_sync
-    flickr_audio = expvars.get("audio-frequency", [7, 9, 11, 13])
-
-    flickr_sync = list(zip(flickr_sync, flickr_sync))
-    flickr_async = list(product(flickr_visual, flickr_audio))
-    flickr_visual = list(product(flickr_visual, dummy_flickr))
-    flickr_audio = list(product(dummy_flickr, flickr_audio))
-
+    flickr_audio = expvars.get("audio-frequency", [2, 9, 11, 13, 20])
     flickrs = mixn(
-        [flickr_sync, flickr_async, flickr_visual, flickr_audio],
+        [flickr_sync, flickr_visual, flickr_audio],
         [
             expvars.get("sync-ratio", 1),
-            expvars.get("async-ratio", 1),
             expvars.get("visual-ratio", 1),
             expvars.get("audio-ratio", 1),
         ]
     )
 
-    modalities = mixn([[0], [1], [2], [3]],
+    modalities = mixn([[0], [1], [2]],
                       [
                           len(flickr_sync) * expvars.get("sync-ratio", 1),
-                          len(flickr_async) * expvars.get("async-ratio", 1),
                           len(flickr_visual) * expvars.get("visual-ratio", 1),
                           len(flickr_audio) * expvars.get("audio-ratio", 1)
                       ]
@@ -87,26 +76,25 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     try:
         while agent.working() and number_of_reward > 0:
             for i, modality, flickr in trials:
-                vhz, ahz = flickr
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
-                show_progress(i, iti, modality, vhz, ahz)
+                show_progress(i, iti, modality, flickr)
                 await flush_message_for(agent, iti_mean)
-                if modality == 0 or modality == 1:
-                    ino.flick_for2(visual_pin, audio_pin, vhz, ahz, flickr_duration_millis)
+                if modality == 0:
+                    ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if vhz in flickr_sync_rwd and nlick >= required_lick:
+                    if flickr in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
                         number_of_reward -= 1
-                elif modality == 2:
-                    ino.flick_for(visual_pin, vhz, flickr_duration_millis)
+                elif modality == 1:
+                    ino.flick_for(visual_pin, flickr, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if vhz in flickr_sync_rwd and nlick >= required_lick:
+                    if flickr in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
                         number_of_reward -= 1
                 else:
-                    ino.flick_for(audio_pin, ahz, flickr_duration_millis)
+                    ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
                     if uniform() < audio_reward_probability:
                         ino.high_for(reward_pin, reward_duration_millis)
@@ -135,7 +123,7 @@ if __name__ == "__main__":
     from utex.fs import get_current_file_abspath, namefile
     from utex.scheduler import SessionMarker
 
-    from flkl.share import read
+    from flkl.behav.share import read
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")
