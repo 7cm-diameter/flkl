@@ -36,8 +36,10 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     audio_reward_probability = expvars.get("reward-probability-for-audio", 0.2)
 
     dummy_flickr = [0]
+    flickr_async_test = expvars.get("test-frequency", 9)
     flickr_sync_rwd = expvars.get("rewarded-frequency", [10, 12, 14])
-    flickr_sync_ext = expvars.get("extinction-frequency", [4, 6, 8])
+    flickr_sync_ext = expvars.get("extinction-frequency", [4, 6, 8]) + [flickr_async_test]
+
     flickr_sync = mix(
         flickr_sync_rwd,
         flickr_sync_ext,
@@ -45,10 +47,16 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
         expvars.get("extinction-ratio", 1)
     )
     flickr_visual = flickr_sync
-    flickr_audio = expvars.get("audio-frequency", [7, 9, 11, 13])
+    flickr_audio = expvars.get("audio-frequency", [5, 7, 11, 13])
 
+    async_magnification = expvars.get("async-magnification", 1.2)
+    # flickr_async = list(zip([flickr_async_test] * 2,
+    #                         [round(flickr_async_test / async_magnification, 1),
+    #                          round(flickr_async_test * async_magnification, 1)]))
+    flickr_async = list(zip([flickr_async_test] * 2,
+                            [round(flickr_async_test + async_magnification, 1),
+                             round(flickr_async_test - async_magnification, 1)]))
     flickr_sync = list(zip(flickr_sync, flickr_sync))
-    flickr_async = list(product(flickr_visual, flickr_audio))
     flickr_visual = list(product(flickr_visual, dummy_flickr))
     flickr_audio = list(product(dummy_flickr, flickr_audio))
 
@@ -73,19 +81,18 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     iti_mean = expvars.get("ITI", 15.0)
     iti_range = expvars.get("ITI-range", 5.0)
-    number_of_reward = expvars.get("number-of-reward", 200)
-    maximum_trial = 500
+    maximum_trial = len(flickrs) * expvars.get("sample-per-stimulus", 20)
 
     flickr_per_trial, modality_per_trial = blockwise_shuffle2(
-        repeat(flickrs, maximum_trial // len(flickrs) + 1),
-        repeat(modalities, maximum_trial // len(flickrs) + 1),
+        repeat(flickrs, maximum_trial // len(flickrs)),
+        repeat(modalities, maximum_trial // len(flickrs)),
         len(flickrs)
     )
 
     trials = TrialIterator(modality_per_trial[:maximum_trial], flickr_per_trial[:maximum_trial])
 
     try:
-        while agent.working() and number_of_reward > 0:
+        while agent.working():
             for i, modality, flickr in trials:
                 vhz, ahz = flickr
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
@@ -97,23 +104,18 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
                     if vhz in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 elif modality == 2:
                     ino.flick_for(visual_pin, vhz, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
                     if vhz in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 else:
                     ino.flick_for(audio_pin, ahz, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
                     if uniform() < audio_reward_probability:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 await agent.sleep(reward_duration)
-                if number_of_reward <= 0:
-                    break
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
