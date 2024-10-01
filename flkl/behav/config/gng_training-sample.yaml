@@ -12,8 +12,8 @@ Comport:
 Experimental:
   audio-pin: 2
   visual-pin: 3
-  reward-pin: [4]
-  response-pin: [6]
+  reward-pin: 4
+  response-pin: [5]
   speaker-id: 2
 
   reward-duration: 0.01
