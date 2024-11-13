@@ -62,19 +62,19 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     iti_mean = expvars.get("ITI", 15.0)
     iti_range = expvars.get("ITI-range", 5.0)
-    number_of_reward = expvars.get("number-of-reward", 200)
+    trials_per_stim = expvars.get("trials-per-stimulus", 20)
     maximum_trial = 500
 
     flickr_per_trial, modality_per_trial = blockwise_shuffle2(
-        repeat(flickrs, maximum_trial // len(flickrs) + 1),
-        repeat(modalities, maximum_trial // len(flickrs) + 1),
+        repeat(flickrs, trials_per_stim),
+        repeat(modalities, trials_per_stim),
         len(flickrs)
     )
 
-    trials = TrialIterator(modality_per_trial[:maximum_trial], flickr_per_trial[:maximum_trial])
+    trials = TrialIterator(modality_per_trial, flickr_per_trial)
 
     try:
-        while agent.working() and number_of_reward > 0:
+        while agent.working():
             for i, modality, flickr in trials:
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
                 show_progress(i, iti, modality, flickr)
@@ -85,23 +85,18 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
                     if flickr in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 elif modality == 1:
                     ino.flick_for(visual_pin, flickr, flickr_duration_millis)
                     await flush_message_for(agent, flickr_duration - decision_duration)
                     nlick = await count_lick(agent, decision_duration, response_pin[0])
                     if flickr in flickr_sync_rwd and nlick >= required_lick:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
                     if uniform() < audio_reward_probability:
                         ino.high_for(reward_pin, reward_duration_millis)
-                        number_of_reward -= 1
                 await agent.sleep(reward_duration)
-                if number_of_reward <= 0:
-                    break
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
