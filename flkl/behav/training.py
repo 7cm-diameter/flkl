@@ -63,7 +63,6 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     iti_mean = expvars.get("ITI", 15.0)
     iti_range = expvars.get("ITI-range", 5.0)
     trials_per_stim = expvars.get("trials-per-stimulus", 20)
-    maximum_trial = 500
 
     flickr_per_trial, modality_per_trial = blockwise_shuffle2(
         repeat(flickrs, trials_per_stim),
