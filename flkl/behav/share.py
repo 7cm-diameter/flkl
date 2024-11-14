@@ -60,7 +60,10 @@ def show_progress(trial: int, iti: float, hz: float, pin: int):
 
 
 def as_eventtime(readline: str) -> tuple[int, int]:
-    event_id = int(readline[0])
+    try:
+        event_id = int(readline[0])
+    except IndexError:
+        return -1, -1
     if event_id == 1:
         event_id = 10
         timeidx = 2
