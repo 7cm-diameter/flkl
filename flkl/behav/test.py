@@ -49,7 +49,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     flickr_visual = flickr_sync
     flickr_audio = expvars.get("audio-frequency", [5, 7, 11, 13])
 
-    async_magnification = expvars.get("async-magnification", 1.2)
+    async_magnification = expvars.get("distructer-frequency", 1)
     # flickr_async = list(zip([flickr_async_test] * 2,
     #                         [round(flickr_async_test / async_magnification, 1),
     #                          round(flickr_async_test * async_magnification, 1)]))
@@ -81,15 +81,15 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     iti_mean = expvars.get("ITI", 15.0)
     iti_range = expvars.get("ITI-range", 5.0)
-    maximum_trial = len(flickrs) * expvars.get("sample-per-stimulus", 20)
+    trials_per_stim = expvars.get("sample-per-stimulus", 20)
 
     flickr_per_trial, modality_per_trial = blockwise_shuffle2(
-        repeat(flickrs, maximum_trial // len(flickrs)),
-        repeat(modalities, maximum_trial // len(flickrs)),
+        repeat(flickrs, trials_per_stim),
+        repeat(modalities, trials_per_stim),
         len(flickrs)
     )
 
-    trials = TrialIterator(modality_per_trial[:maximum_trial], flickr_per_trial[:maximum_trial])
+    trials = TrialIterator(modality_per_trial, flickr_per_trial)
 
     try:
         while agent.working():
