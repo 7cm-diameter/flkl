@@ -49,13 +49,13 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     flickr_visual = flickr_sync
     flickr_audio = expvars.get("audio-frequency", [5, 7, 11, 13])
 
-    async_magnification = expvars.get("distructer-frequency", 1)
+    distractor_frequnecy = expvars.get("distractor-frequency", 1)
     # flickr_async = list(zip([flickr_async_test] * 2,
     #                         [round(flickr_async_test / async_magnification, 1),
     #                          round(flickr_async_test * async_magnification, 1)]))
     flickr_async = list(zip([flickr_async_test] * 2,
-                            [round(flickr_async_test + async_magnification, 1),
-                             round(flickr_async_test - async_magnification, 1)]))
+                            [round(flickr_async_test + distractor_frequnecy, 1),
+                             round(flickr_async_test - distractor_frequnecy, 1)]))
     flickr_sync = list(zip(flickr_sync, flickr_sync))
     flickr_visual = list(product(flickr_visual, dummy_flickr))
     flickr_audio = list(product(dummy_flickr, flickr_audio))
