@@ -170,12 +170,11 @@ if __name__ == "__main__":
         if board.serial_number == com_input_config.get("serial-number"):
             setting.apply_setting(com_input_config)
             reader_ino = ArduinoLineReader(ArduinoConnecter(setting).connect())
+            [reader_ino.pin_mode(i, PinMode.INPUT) for i in range(0, 14)]
         elif board.serial_number == com_output_config.get("serial-number"):
             setting.apply_setting(com_output_config)
             flkl = Flkl(ArduinoConnecter(setting).connect())
-            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(2, 6)]
-            [flkl.pin_mode(i, PinMode.INPUT) for i in range(6, 8)]
-
+            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(0, 14)]
     if reader_ino is None:
         raise ValueError(
             f"Input arduino (serial number: {com_input_config.get('serial-number')}) is not found."
