@@ -25,7 +25,8 @@ Experimental:
   rewarded-frequency: [10, 12, 14]
   extinction-frequency: [4, 6, 8]
   audio-frequency: [7, 9, 11, 13]
-  async-magnification: 0.2
+  test-frequency: 9
+  distractor-frequency: 1.
 
   reward-ratio: 1
   extinction-ratio: 1
