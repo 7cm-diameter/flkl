@@ -10,5 +10,6 @@ __pycache__/
 !*sample.yaml
 !test*.yaml
 /.vim
+/archive
 data/
 /flkl/model
