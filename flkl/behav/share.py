@@ -69,7 +69,10 @@ def as_eventtime(readline: str) -> tuple[int, int]:
         timeidx = 2
     else:
         timeidx = 1
-    micros = int(readline[timeidx:])
+    try:
+        micros = int(readline[timeidx:])
+    except ValueError:
+        return -1, -1
     return event_id, micros
 
 
