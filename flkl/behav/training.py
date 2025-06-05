@@ -25,13 +25,9 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
-    decision_duration = expvars.get("decision-duration", 1.)
-    required_lick = expvars.get("required-lick", 1)
 
     reward_duration_millis = as_millis(reward_duration)
     flickr_duration_millis = as_millis(flickr_duration)
-
-    audio_reward_probability = expvars.get("reward-probability-for-audio", 0.2)
 
     flickr_sync_rwd = expvars.get("rewarded-frequency", [12, 14, 16])
     flickr_sync_ext = expvars.get("extinction-frequency", [6, 8, 10])
@@ -80,32 +76,28 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 await flush_message_for(agent, iti_mean)
                 if modality == 0:
                     ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
-                    await flush_message_for(agent, flickr_duration - decision_duration)
-                    nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if flickr in flickr_sync_rwd and nlick >= required_lick:
-                        ino.high_for(reward_pin, reward_duration_millis)
+                    await agent.sleep(flickr_duration)
+                    ino.high_for(reward_pin, reward_duration_millis)
                 elif modality == 1:
                     ino.flick_for(visual_pin, flickr, flickr_duration_millis)
-                    await flush_message_for(agent, flickr_duration - decision_duration)
-                    nlick = await count_lick(agent, decision_duration, response_pin[0])
-                    if flickr in flickr_sync_rwd and nlick >= required_lick:
-                        ino.high_for(reward_pin, reward_duration_millis)
+                    await agent.sleep(flickr_duration)
+                    ino.high_for(reward_pin, reward_duration_millis)
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
-                    await agent.sleep(flickr_duration)
-                    if uniform() < audio_reward_probability:
-                        ino.high_for(reward_pin, reward_duration_millis)
-                await agent.sleep(reward_duration)
+                    await agent.sleep(flickr_duration + reward_duration)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
     except NotWorkingError:
         pass
 
 if __name__ == "__main__":
+    import argparse
+    from datetime import datetime
     from os import mkdir
     from os.path import exists, join
     from typing import Optional
 
+    import yaml
     from amas.agent import Agent
     from amas.connection import Register
     from amas.env import Environment
@@ -113,64 +105,60 @@ if __name__ == "__main__":
     from pyno.ino import (ArduinoConnecter, ArduinoLineReader, ArduinoSetting,
                           Mode, PinMode)
     from utex.agent import AgentAddress, Observer, Recorder, self_terminate
-    from utex.clap import PinoClap
+    from utex.clap import Config
     from utex.fs import get_current_file_abspath, namefile
     from utex.scheduler import SessionMarker
 
     from flkl.behav.share import read
 
-    config = PinoClap().config()
-    com_input_config: Optional[dict] = config.comport.get("input")
+    # Step 1: 引数の読み込み
+    parser = argparse.ArgumentParser(description="Run the flickr discrimination task.")
+    parser.add_argument("--subject", "-s", required=True, help="Subject ID")
+    parser.add_argument("--yaml", "-y", required=True, help="Path to YAML config file")
+    args = parser.parse_args()
+
+    subject = args.subject
+    yaml_path = args.yaml
+
+    with open(yaml_path, "r") as f:
+        config_data = yaml.safe_load(f)
+
+    log_dir = "./log"
+    if not exists(log_dir):
+        mkdir(log_dir)
+
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    log_filename = f"{subject}-{timestamp}.yaml"
+    log_path = join(log_dir, log_filename)
+
+    with open(log_path, "w") as f:
+        yaml.dump(config_data, f, default_flow_style=False)
+
+    config = Config(log_path)
     com_output_config: Optional[dict] = config.comport.get("output")
-    if com_input_config is None or com_output_config is None:
-        raise ValueError("`com_input_config` and `com_output_config` are not defined.")
-    com_input_config.update({"mode": Mode.readeruno})
+    if com_output_config is None:
+        raise ValueError("`com_output_config` are not defined.")
     com_output_config.update({"mode": Mode.user})
 
-    if com_input_config is None and com_output_config is None:
+    if com_output_config is None:
         raise Exception()
 
     available_boards = check_connected_board_info()
-    for board in available_boards:
-        setting = ArduinoSetting.derive_from_portinfo(board)
-        if board.serial_number == com_input_config.get("serial-number"):
-            setting.apply_setting(com_input_config)
-            serial_number = com_input_config.get("serial-number")
-            print(f"Uploading sketch to reader arduino {serial_number}")
-        elif board.serial_number == com_output_config.get("serial-number"):
-            setting.apply_setting(com_output_config)
-            serial_number = com_output_config.get("serial-number")
-            print(f"Uploading sketch to controller arduino {serial_number}")
-        ArduinoConnecter(setting).write_sketch()
 
-    available_boards = check_connected_board_info()
-    reader_ino, flkl = None, None
-    for board in available_boards:
-        setting = ArduinoSetting.derive_from_portinfo(board)
-        if board.serial_number == com_input_config.get("serial-number"):
-            setting.apply_setting(com_input_config)
-            reader_ino = ArduinoLineReader(ArduinoConnecter(setting).connect())
-            [reader_ino.pin_mode(i, PinMode.INPUT) for i in range(0, 14)]
-        elif board.serial_number == com_output_config.get("serial-number"):
-            setting.apply_setting(com_output_config)
-            flkl = Flkl(ArduinoConnecter(setting).connect())
-            [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(0, 14)]
+    if len(available_boards) == 0:
+        raise RuntimeError("No Arduino boards were detected. Please check the connection and try again.")
+    elif len(available_boards) > 1:
+        raise RuntimeError("Multiple Arduino boards were detected. Please connect only one board and try again.")
 
-    if reader_ino is None:
-        raise ValueError(
-            f"Input arduino (serial number: {com_input_config.get('serial-number')}) is not found."
-        )
+    board = available_boards[0]
 
-    if flkl is None:
-        raise ValueError(
-            f"Output arduino (serial number: {com_output_config.get('serial-number')}) is not found."
-        )
-
-    data_dir = join(get_current_file_abspath(__file__), "data")
-    if not exists(data_dir):
-        mkdir(data_dir)
-    config.metadata.update({"condition": "gng-training"})
-    filename = join(data_dir, namefile(config.metadata))
+    setting = ArduinoSetting.derive_from_portinfo(board)
+    setting.apply_setting(com_output_config)
+    serial_number = com_output_config.get("serial-number")
+    print(f"Uploading sketch to controller arduino {serial_number}")
+    ArduinoConnecter(setting).write_sketch()
+    flkl = Flkl(ArduinoConnecter(setting).connect())
+    [flkl.pin_mode(i, PinMode.OUTPUT) for i in range(0, 14)]
 
     controller = (
         Agent("CONTROLLER")
@@ -178,15 +166,9 @@ if __name__ == "__main__":
         .assign_task(self_terminate)
     )
 
-    reader = (
-        Agent(AgentAddress.READER.value)
-        .assign_task(read, ino=reader_ino, expvars=config.experimental)
-        .assign_task(self_terminate)
-    )
     observer = Observer()
-    recorder = Recorder(filename=filename, timing=True)
 
-    agents = [controller, recorder, reader, observer]
+    agents = [controller, observer]
     register = Register(agents)
     env = Environment(agents)
 
