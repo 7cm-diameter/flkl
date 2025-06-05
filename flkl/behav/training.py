@@ -19,9 +19,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from flkl.behav.share import as_millis, count_lick, flush_message_for
 
     reward_pin = expvars.get("reward-pin", 4)
-    response_pin = expvars.get("response-pin", [6])
-    audio_pin = expvars.get("audio-pin", 2)
-    visual_pin = expvars.get("visual-pin", 3)
+    audio_pin = expvars.get("speaker-pin", 2)
+    visual_pin = expvars.get("led-pin", 3)
 
     reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
@@ -77,11 +76,13 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 if modality == 0:
                     ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
-                    ino.high_for(reward_pin, reward_duration_millis)
+                    if flickr in flickr_sync_rwd:
+                        ino.high_for(reward_pin, reward_duration_millis)
                 elif modality == 1:
                     ino.flick_for(visual_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration)
-                    ino.high_for(reward_pin, reward_duration_millis)
+                    if flickr in flickr_sync_rwd:
+                        ino.high_for(reward_pin, reward_duration_millis)
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration + reward_duration)
