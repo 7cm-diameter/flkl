@@ -1,6 +1,6 @@
 from amas.agent import Agent
 
-from flkl.behav.share import Flkl
+from flkl.share import Flkl
 
 
 def show_progress(trial: int, iti: float, modality: int, vhz: float, ahz: float):
@@ -18,7 +18,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     from utex.scheduler import (SessionMarker, TrialIterator,
                                 blockwise_shuffle2, mix, mixn, repeat)
 
-    from flkl.behav.share import as_millis, count_lick, flush_message_for
+    from flkl.share import as_millis, count_lick, flush_message_for
 
     reward_pin = expvars.get("reward-pin", 4)
     response_pin = expvars.get("response-pin", [6])
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     from utex.fs import get_current_file_abspath, namefile
     from utex.scheduler import SessionMarker
 
-    from flkl.behav.share import read
+    from flkl.share import read
 
     config = PinoClap().config()
     com_input_config: Optional[dict] = config.comport.get("input")
