@@ -2,6 +2,7 @@
 /poetry.lock
 /.venv
 /analysis
+/log
 __pycache__/
 *.yaml
 *.csv
