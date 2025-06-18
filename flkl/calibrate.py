@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     # Step 1: 引数の読み込み
     parser = argparse.ArgumentParser(description="Run the flickr discrimination task.")
-    parser.add_argument("--pin", "-p", deault=4, help="Number of reward pin")
+    parser.add_argument("--pin", "-p", default=4, help="Number of reward pin")
     parser.add_argument("--duration", "-d", required=True, help="Duration of reward")
     parser.add_argument("--interval", "-i", required=True, help="Interval between each reward")
     parser.add_argument("--number-of-reward", "-n", required=True, help="Number of rerward presentation")
