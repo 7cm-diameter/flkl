@@ -36,10 +36,10 @@ if __name__ == "__main__":
 
     # Step 1: 引数の読み込み
     parser = argparse.ArgumentParser(description="Run the flickr discrimination task.")
-    parser.add_argument("--pin", "-p", default=4, help="Number of reward pin")
-    parser.add_argument("--duration", "-d", required=True, help="Duration of reward")
-    parser.add_argument("--interval", "-i", required=True, help="Interval between each reward")
-    parser.add_argument("--number-of-reward", "-n", required=True, help="Number of rerward presentation")
+    parser.add_argument("--pin", "-p", default=4, type=int, help="Number of reward pin")
+    parser.add_argument("--duration", "-d", required=True, type=float, help="Duration of reward")
+    parser.add_argument("--interval", "-i", required=True, type=float, help="Interval between each reward")
+    parser.add_argument("--number-of-reward", "-n", required=True, type=int, help="Number of rerward presentation")
     args = parser.parse_args()
 
     available_boards = check_connected_board_info()
@@ -52,6 +52,7 @@ if __name__ == "__main__":
     board = available_boards[0]
 
     setting = ArduinoSetting.derive_from_portinfo(board)
+    setting.apply_setting({"baudrate": 115200})
     connector = ArduinoConnecter(setting)
     connector.write_sketch()
     flkl = Flkl(connector.connect())
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
     controller = (
         Agent("CONTROLLER")
-        .assign_task(reward_calibration, ino=flkl, n=args.n, interval=args.interval, duration=args.duration, pin=args.pin)
+        .assign_task(reward_calibration, ino=flkl, n=args.number_of_reward, interval=args.interval, duration=args.duration, pin=args.pin)
         .assign_task(self_terminate)
     )
 
