@@ -30,7 +30,7 @@ if __name__ == "__main__":
     from amas.connection import Register
     from amas.env import Environment
     from pyno.com import check_connected_board_info
-    from pyno.ino import ArduinoConnecter, ArduinoSetting, PinMode
+    from pyno.ino import ArduinoConnecter, ArduinoSetting, Mode, PinMode
     from utex.agent import AgentAddress, Observer, self_terminate
     from utex.scheduler import SessionMarker
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     board = available_boards[0]
 
     setting = ArduinoSetting.derive_from_portinfo(board)
-    setting.apply_setting({"baudrate": 115200})
+    setting.apply_setting({"baudrate": 115200, "mode": Mode.user, "sketch": "./ino"})
     connector = ArduinoConnecter(setting)
     connector.write_sketch()
     flkl = Flkl(connector.connect())
