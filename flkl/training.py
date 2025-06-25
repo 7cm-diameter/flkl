@@ -88,6 +88,14 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                     await agent.sleep(flickr_duration + reward_duration)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
+
+        # 正常終了時にログファイルのfinishedをTrueに更新
+        with open(log_path, "r") as f:
+            final_config = yaml.safe_load(f)
+        final_config["finished"] = True
+        with open(log_path, "w") as f:
+            yaml.dump(final_config, f, default_flow_style=False)
+
     except NotWorkingError:
         pass
 

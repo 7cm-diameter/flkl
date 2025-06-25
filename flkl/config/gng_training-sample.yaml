@@ -21,6 +21,8 @@ Experimental:
   visual-ratio: 1
   audio-ratio: 1
 
-  trial-per-stimulus: 20
+  trials-per-stimulus: 20
   ITI: 15.
   ITI-range: 5.
+
+  finished: false
