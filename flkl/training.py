@@ -89,6 +89,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration + reward_duration)
+            await agent.sleep(4.)
             ino.high_for(signal_pin, 100)
             await agent.sleep(0.1)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
