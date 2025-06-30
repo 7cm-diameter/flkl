@@ -7,6 +7,7 @@ Experimental:
   speaker-pin: 2
   led-pin: 3
   reward-pin: 4
+  signal-pin: 5
 
   reward-duration: 0.01
   flickr-duration: 2.

@@ -21,6 +21,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     reward_pin = expvars.get("reward-pin", 4)
     audio_pin = expvars.get("speaker-pin", 2)
     visual_pin = expvars.get("led-pin", 3)
+    signal_pin = expvars.get("signal-pin", 5)
 
     reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
@@ -69,6 +70,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     try:
         while agent.working():
+            ino.high_for(signal_pin, 50)
+            await agent.sleep(0.05)
             for i, modality, flickr in trials:
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
                 show_progress(i, iti, modality, flickr)
@@ -86,6 +89,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration + reward_duration)
+            ino.high_for(signal_pin, 100)
+            await agent.sleep(0.1)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
 
