@@ -1,7 +1,6 @@
 *.egg-info
 /poetry.lock
 /.venv
-/analysis
 /log
 __pycache__/
 *.yaml
@@ -11,6 +10,7 @@ __pycache__/
 !*sample.yaml
 !test*.yaml
 /.vim
+/*/archive
 /archive
 data/
 /flkl/model

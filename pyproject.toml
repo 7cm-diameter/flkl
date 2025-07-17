@@ -11,6 +11,7 @@ pyno = {git = "https://github.com/7cm-diameter/pyno.git"}
 amas = {git = "https://github.com/7cm-diameter/amas.git"}
 utex = {git = "https://github.com/7cm-diameter/utex.git"}
 pandas = "^2.2.0"
+nptdms = "^1.10.0"
 
 
 [tool.poetry.group.dev.dependencies]
