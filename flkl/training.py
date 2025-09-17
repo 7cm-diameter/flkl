@@ -21,7 +21,6 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     reward_pin = expvars.get("reward-pin", 4)
     audio_pin = expvars.get("speaker-pin", 2)
     visual_pin = expvars.get("led-pin", 3)
-    signal_pin = expvars.get("signal-pin", 5)
 
     reward_duration = expvars.get("reward-duration", 0.01)
     flickr_duration = expvars.get("flickr-duration", 2.)
@@ -70,8 +69,6 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
     try:
         while agent.working():
-            ino.high_for(signal_pin, 50)
-            await agent.sleep(0.05)
             for i, modality, flickr in trials:
                 iti = uniform(iti_mean - iti_range, iti_mean + iti_range)
                 show_progress(i, iti, modality, flickr)
@@ -89,9 +86,6 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration + reward_duration)
-            await agent.sleep(4.)
-            ino.high_for(signal_pin, 100)
-            await agent.sleep(0.1)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
 
@@ -112,13 +106,18 @@ async def ir_timestamp(agent: Agent, ino: Flkl, expvars: dict):
     from flkl.share import as_millis
 
     ir_pin = expvars.get("ir-pin", 6)
-    stamp_duration = as_millis(0.1)
-    stamp_interval = as_millis(10) - stamp_duration
+    initial_flash_duration = as_millis(0.1)
+    stamp_duration = as_millis(0.05)
+    stamp_interval = 10.0
+    last_flash_duration = as_millis(0.2)
 
     try:
+        ino.high_for(ir_pin, initial_flash_duration)
+        await agent.sleep(stamp_interval)
         while agent.working():
             ino.high_for(ir_pin, stamp_duration)
             await agent.sleep(stamp_interval)
+        ino.high_for(ir_pin, last_flash_duration)
     except NotWorkingError:
         pass
 
