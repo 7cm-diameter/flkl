@@ -86,6 +86,7 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 else:
                     ino.flick_for(audio_pin, flickr, flickr_duration_millis)
                     await agent.sleep(flickr_duration + reward_duration)
+            await agent.sleep(1.)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
 
@@ -105,7 +106,7 @@ async def ir_timestamp(agent: Agent, ino: Flkl, expvars: dict):
 
     from flkl.share import as_millis
 
-    ir_pin = expvars.get("ir-pin", 6)
+    ir_pin = expvars.get("ir-pin", 5)
     initial_flash_duration = as_millis(0.1)
     stamp_duration = as_millis(0.05)
     stamp_interval = 10.0
@@ -117,9 +118,8 @@ async def ir_timestamp(agent: Agent, ino: Flkl, expvars: dict):
         while agent.working():
             ino.high_for(ir_pin, stamp_duration)
             await agent.sleep(stamp_interval)
-        ino.high_for(ir_pin, last_flash_duration)
     except NotWorkingError:
-        pass
+        ino.high_for(ir_pin, last_flash_duration)
 
 
 if __name__ == "__main__":
