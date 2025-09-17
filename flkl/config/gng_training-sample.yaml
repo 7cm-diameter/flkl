@@ -8,6 +8,7 @@ Experimental:
   led-pin: 3
   reward-pin: 4
   signal-pin: 5
+  ir-pin: 6
 
   reward-duration: 0.01
   flickr-duration: 2.

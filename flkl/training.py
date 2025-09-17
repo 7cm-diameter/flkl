@@ -105,6 +105,25 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
     except NotWorkingError:
         pass
 
+
+async def ir_timestamp(agent: Agent, ino: Flkl, expvars: dict):
+    from amas.agent import NotWorkingError
+    from utex.agent import AgentAddress
+
+    from flkl.share import as_millis, count_lick, flush_message_for
+
+    ir_pin = expvars.get("ir-pin", 6)
+    stamp_duration = as_millis(0.1)
+    stamp_interval = as_millis(10) - stamp_duration
+
+    try:
+        while agent.working():
+            ino.high_for(ir_pin, stamp_duration)
+            await agent.sleep(stamp_interval)
+    except NotWorkingError:
+        pass
+
+
 if __name__ == "__main__":
     import argparse
     from datetime import datetime
@@ -178,6 +197,7 @@ if __name__ == "__main__":
     controller = (
         Agent("CONTROLLER")
         .assign_task(flickr_discrimination, ino=flkl, expvars=config.experimental)
+        .assign_task(ir_timestamp, ino=flkl, expvars=config.experimental)
         .assign_task(self_terminate)
     )
 
