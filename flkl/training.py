@@ -108,9 +108,8 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
 
 async def ir_timestamp(agent: Agent, ino: Flkl, expvars: dict):
     from amas.agent import NotWorkingError
-    from utex.agent import AgentAddress
 
-    from flkl.share import as_millis, count_lick, flush_message_for
+    from flkl.share import as_millis
 
     ir_pin = expvars.get("ir-pin", 6)
     stamp_duration = as_millis(0.1)
