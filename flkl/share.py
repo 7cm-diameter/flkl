@@ -8,9 +8,16 @@ class Flkl(ArduinoFlicker):
     def __init__(self, connecter: ArduinoConnecter):
         super().__init__(connecter)
 
-    def flick_for(self, pin: int, hz: float, flickr_duration: int, pulse_duration: int = 20):
+    def flick_for(self, pin: int, hz: float, flickr_duration: int, rpin: int, millis: int, pulse_duration: int = 20):
         hz = int(hz * 10)
-        message = b"\x13" + as_bytes(pin, 1) + as_bytes(hz, 1) + as_bytes(flickr_duration, 2) + as_bytes(pulse_duration, 2)
+        message = (b"\x13"
+            + as_bytes(pin, 1)
+            + as_bytes(hz, 1)
+            + as_bytes(flickr_duration, 2)
+            + as_bytes(pulse_duration, 2)
+            + as_bytes(rpin, 1)
+            + as_bytes(millis, 2)
+        )
         self.connection.write(message)
 
     def flick_on(self, pin: int, hz: float, flickr_duration: int, pulse_duration: int = 20):
@@ -18,7 +25,7 @@ class Flkl(ArduinoFlicker):
         message = b"\x14" + as_bytes(pin, 1) + as_bytes(hz, 1) + as_bytes(flickr_duration, 2) + as_bytes(pulse_duration, 2)
         self.connection.write(message)
 
-    def flick_for2(self, pin1: int, pin2: int, hz1: float, hz2: float, flickr_duration: int, pulse_duration: int = 20):
+    def flick_for2(self, pin1: int, pin2: int, hz1: float, hz2: float, flickr_duration: int, rpin: int, millis: int, pulse_duration: int = 20):
         hz1 = int(hz1 * 10)
         hz2 = int(hz2 * 10)
         message = (
@@ -29,6 +36,8 @@ class Flkl(ArduinoFlicker):
             + as_bytes(hz2, 1)
             + as_bytes(flickr_duration, 2)
             + as_bytes(pulse_duration, 2)
+            + as_bytes(rpin, 1)
+            + as_bytes(millis, 2)
         )
         self.connection.write(message)
 

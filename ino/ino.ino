@@ -230,11 +230,14 @@ void loop() {
         double flickr_duration = read_2bytes();
         double pulse_duration = read_2bytes();
         double pulse_interval = 10000 / hz1 - pulse_duration;
+	      int rpin = Serial.read();
+	      double reward_duration = read_2bytes();
 
         unsigned long pulse_interval_micros = from_millis_to_micros(pulse_interval);
         unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
         unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
         unsigned long waitingtime  = pulse_duration_micros;
+        unsigned long reward_duration_micros = from_millis_to_micros(reward_duration);
         digiHIGH[pin1]();
         flicker_states[pin1] = 1;
         unsigned long starttime = micros();
@@ -255,33 +258,16 @@ void loop() {
           }
         }
 
-        /*
-        while((duration = Serial.read()) == -1) {};
-        double duration = read_2bytes();
-        double flicktime = hz1 * duration / 10000;
-
-        flicker_states[pin1] = 0;
-        unsigned long interval1 = calculate_interval(flicktime, duration);
-        unsigned long duration_micros = from_millis_to_micros(duration);
-        unsigned long starttimer = micros();
-        unsigned long intervaltimer1 = micros();
-
-        while(micros() - starttimer < duration_micros) {
-          if ((micros() - intervaltimer1) >= interval1) {
-            if (!flicker_states[pin1]) {
-              digiHIGH[pin1]();
-              flicker_states[pin1] = 1;
-            } else {
-              digiLOW[pin1]();
-              flicker_states[pin1] = 0;
-            }
-            intervaltimer1 = micros();
-          }
-        };
-        */
-
         digiLOW[pin1]();
         flicker_states[pin1] = 0;
+
+        if (rpin > 0) {
+          unsigned long intervaltimer1 = micros();
+          digiHIGH[rpin]();
+          while(micros() - intervaltimer1 < reward_duration_micros) {};
+          digiLOW[rpin]();
+        }
+
         break;
       }
 
@@ -356,6 +342,8 @@ void loop() {
         double pulse_duration = read_2bytes();
         double pulse_interval1 = 10000 / hz1 - pulse_duration;
         double pulse_interval2 = 10000 / hz2 - pulse_duration;
+	      int rpin = Serial.read();
+	      double reward_duration = read_2bytes();
 
         unsigned long pulse_interval_micros1 = from_millis_to_micros(pulse_interval1);
         unsigned long pulse_interval_micros2 = from_millis_to_micros(pulse_interval2);
@@ -363,6 +351,7 @@ void loop() {
         unsigned long flickr_duration_micros = from_millis_to_micros(flickr_duration);
         unsigned long waitingtime1 = pulse_duration_micros;
         unsigned long waitingtime2 = pulse_duration_micros;
+        unsigned long reward_duration_micros = from_millis_to_micros(reward_duration);
         digiHIGH[pin1]();
         digiHIGH[pin2]();
         flicker_states[pin1] = 1;
@@ -441,6 +430,14 @@ void loop() {
         digiLOW[pin2]();
         flicker_states[pin1] = 0;
         flicker_states[pin2] = 0;
+
+        if (rpin > 0) {
+          unsigned long intervaltimer1 = micros();
+          digiHIGH[rpin]();
+          while(micros() - intervaltimer1 < reward_duration_micros) {};
+          digiLOW[rpin]();
+        }
+
         break;
       }
 
@@ -573,4 +570,3 @@ void loop() {
     }
   }
 }
-
