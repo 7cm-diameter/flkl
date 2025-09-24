@@ -74,18 +74,22 @@ async def flickr_discrimination(agent: Agent, ino: Flkl, expvars: dict):
                 show_progress(i, iti, modality, flickr)
                 await flush_message_for(agent, iti_mean)
                 if modality == 0:
-                    ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis)
-                    await agent.sleep(flickr_duration)
                     if flickr in flickr_sync_rwd:
-                        ino.high_for(reward_pin, reward_duration_millis)
+                        # ino.high_for(reward_pin, reward_duration_millis)
+                        ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis, reward_pin, reward_duration_millis)
+                    else:
+                        ino.flick_for2(visual_pin, audio_pin, flickr, flickr, flickr_duration_millis, 0, reward_duration_millis)
+                    # await agent.sleep(flickr_duration + reward_duration)
                 elif modality == 1:
-                    ino.flick_for(visual_pin, flickr, flickr_duration_millis)
-                    await agent.sleep(flickr_duration)
                     if flickr in flickr_sync_rwd:
-                        ino.high_for(reward_pin, reward_duration_millis)
+                        # ino.high_for(reward_pin, reward_duration_millis)
+                        ino.flick_for(visual_pin, flickr, flickr_duration_millis, reward_pin, reward_duration_millis)
+                    else:
+                        ino.flick_for(visual_pin, flickr, flickr_duration_millis, 0, reward_duration_millis)
+                    # await agent.sleep(flickr_duration + reward_duration)
                 else:
-                    ino.flick_for(audio_pin, flickr, flickr_duration_millis)
-                    await agent.sleep(flickr_duration + reward_duration)
+                    ino.flick_for(audio_pin, flickr, flickr_duration_millis, 0, reward_duration_millis)
+                await agent.sleep(flickr_duration + reward_duration)
             await agent.sleep(1.)
             agent.send_to(AgentAddress.OBSERVER.value, SessionMarker.NEND)
             agent.finish()
