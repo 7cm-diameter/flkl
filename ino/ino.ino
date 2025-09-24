@@ -152,6 +152,7 @@ void setup() {
 void loop() {
   int pin1;
   int pin2;
+  int rpin;
   int command;
 
   while (1) {
@@ -229,9 +230,10 @@ void loop() {
         while((hz1 = Serial.read()) == -1) {};
         double flickr_duration = read_2bytes();
         double pulse_duration = read_2bytes();
+        while((rpin = Serial.read()) == -1) {};
+        double reward_duration = read_2bytes();
         double pulse_interval = 10000 / hz1 - pulse_duration;
-	      int rpin = Serial.read();
-	      double reward_duration = read_2bytes();
+
 
         unsigned long pulse_interval_micros = from_millis_to_micros(pulse_interval);
         unsigned long pulse_duration_micros = from_millis_to_micros(pulse_duration);
@@ -340,10 +342,11 @@ void loop() {
         while((hz2 = Serial.read()) == -1) {};
         double flickr_duration = read_2bytes();
         double pulse_duration = read_2bytes();
+        while((rpin = Serial.read()) == -1) {};
+        double reward_duration = read_2bytes();
         double pulse_interval1 = 10000 / hz1 - pulse_duration;
         double pulse_interval2 = 10000 / hz2 - pulse_duration;
-	      int rpin = Serial.read();
-	      double reward_duration = read_2bytes();
+
 
         unsigned long pulse_interval_micros1 = from_millis_to_micros(pulse_interval1);
         unsigned long pulse_interval_micros2 = from_millis_to_micros(pulse_interval2);
